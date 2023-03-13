@@ -15,7 +15,7 @@ remove :;
 # Install dependencies
 install :;
 	@forge install foundry-rs/forge-std@master --no-commit && \
-	forge install openzeppelin/openzeppelin-contracts@master --no-commit
+	forge install openzeppelin/openzeppelin-contracts@master --no-commit \
 
 # Update dependencies
 update :;
