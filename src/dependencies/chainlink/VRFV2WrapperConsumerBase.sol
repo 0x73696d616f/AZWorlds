@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/LinkTokenInterface.sol";
 import "./interfaces/VRFV2WrapperInterface.sol";
+import "./interfaces/VRFV2WrapperConsumerBaseInterface.sol";
 
 /**
  *
@@ -28,7 +29,7 @@ import "./interfaces/VRFV2WrapperInterface.sol";
  * @dev Consumers must implement the fullfillRandomWords function, which will be called during
  * @dev fulfillment with the randomness result.
  */
-abstract contract VRFV2WrapperConsumerBase {
+abstract contract VRFV2WrapperConsumerBase is VRFV2WrapperConsumerBaseInterface {
     LinkTokenInterface internal immutable LINK;
     VRFV2WrapperInterface internal immutable VRF_V2_WRAPPER;
 
@@ -74,7 +75,7 @@ abstract contract VRFV2WrapperConsumerBase {
      */
     function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal virtual;
 
-    function rawFulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) external {
+    function rawFulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) external override {
         require(msg.sender == address(VRF_V2_WRAPPER), "only VRF V2 wrapper can fulfill");
         fulfillRandomWords(_requestId, _randomWords);
     }
