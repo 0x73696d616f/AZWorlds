@@ -1,0 +1,213 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>❱ utils - Foundry Template</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../../book.css">
+
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="../../../../index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item expanded "><a href="../../../../src/dependencies/index.html">❱ dependencies</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/index.html">❱ chainlink</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/interfaces/LinkTokenInterface.sol/interface.LinkTokenInterface.html">LinkTokenInterface</a></li><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/interfaces/VRFV2WrapperConsumerBaseInterface.sol/interface.VRFV2WrapperConsumerBaseInterface.html">VRFV2WrapperConsumerBaseInterface</a></li><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/interfaces/VRFV2WrapperInterface.sol/interface.VRFV2WrapperInterface.html">VRFV2WrapperInterface</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/chainlink/VRFV2WrapperConsumerBase.sol/abstract.VRFV2WrapperConsumerBase.html">VRFV2WrapperConsumerBase</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/index.html">❱ layerZero</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/lzApp/index.html">❱ lzApp</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/lzApp/ILayerZeroEndpoint.sol/interface.ILayerZeroEndpoint.html">ILayerZeroEndpoint</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/lzApp/ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.html">ILayerZeroReceiver</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/lzApp/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/oft/index.html">❱ oft</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/oft/IOFT.sol/interface.IOFT.html">IOFT</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/oft/IOFTCore.sol/interface.IOFTCore.html">IOFTCore</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft1155/index.html">❱ onft1155</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft1155/IONFT1155.sol/interface.IONFT1155.html">IONFT1155</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft1155/IONFT1155Core.sol/interface.IONFT1155Core.html">IONFT1155Core</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft721/index.html">❱ onft721</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft721/IONFT721.sol/interface.IONFT721.html">IONFT721</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/interfaces/onft721/IONFT721Core.sol/interface.IONFT721Core.html">IONFT721Core</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/lzApp/index.html">❱ lzApp</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/lzApp/LzApp.sol/abstract.LzApp.html">LzApp</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/lzApp/NonblockingLzApp.sol/abstract.NonblockingLzApp.html">NonblockingLzApp</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/oft/index.html">❱ oft</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/oft/OFT.sol/contract.OFT.html">OFT</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/oft/OFTCore.sol/abstract.OFTCore.html">OFTCore</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft1155/index.html">❱ onft1155</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft1155/ONFT1155.sol/contract.ONFT1155.html">ONFT1155</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft1155/ONFT1155Core.sol/abstract.ONFT1155Core.html">ONFT1155Core</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft721/index.html">❱ onft721</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft721/ONFT721.sol/contract.ONFT721.html">ONFT721</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/onft721/ONFT721Core.sol/abstract.ONFT721Core.html">ONFT721Core</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/util/index.html">❱ util</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/util/BytesLib.sol/library.BytesLib.html">BytesLib</a></li><li class="chapter-item "><a href="../../../../src/dependencies/layerZero/util/ExcessivelySafeCall.sol/library.ExcessivelySafeCall.html">ExcessivelySafeCall</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../../../src/dependencies/linearVRGDA/index.html">❱ linearVRGDA</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../../src/dependencies/linearVRGDA/utils/index.html" class="active">❱ utils</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadLn.html">wadLn</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.unsafeWadMul.html">unsafeWadMul</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadPow.html">wadPow</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadMul.html">wadMul</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.toDaysWadUnsafe.html">toDaysWadUnsafe</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.unsafeDiv.html">unsafeDiv</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadDiv.html">wadDiv</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadExp.html">wadExp</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.unsafeWadDiv.html">unsafeWadDiv</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.fromDaysWadUnsafe.html">fromDaysWadUnsafe</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.toWadUnsafe.html">toWadUnsafe</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/LinearVRGDA.sol/abstract.LinearVRGDA.html">LinearVRGDA</a></li><li class="chapter-item "><a href="../../../../src/dependencies/linearVRGDA/VRGDA.sol/abstract.VRGDA.html">VRGDA</a></li></ol></li><li class="chapter-item "><a href="../../../../src/dependencies/playnance.sol/abstract.Context.html">Context</a></li><li class="chapter-item "><a href="../../../../src/dependencies/playnance.sol/abstract.Ownable.html">Ownable</a></li><li class="chapter-item "><a href="../../../../src/dependencies/playnance.sol/contract.UpVsDownGameV1.html">UpVsDownGameV1</a></li></ol></li><li class="chapter-item "><a href="../../../../src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../../src/interfaces/IBank.sol/interface.IBank.html">IBank</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IBoss.sol/interface.IBoss.html">IBoss</a></li><li class="chapter-item "><a href="../../../../src/interfaces/ICharacter.sol/interface.ICharacter.html">ICharacter</a></li><li class="chapter-item "><a href="../../../../src/interfaces/ICharacterPortal.sol/interface.ICharacterPortal.html">ICharacterPortal</a></li><li class="chapter-item "><a href="../../../../src/interfaces/ICharacterSale.sol/interface.ICharacterSale.html">ICharacterSale</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IGold.sol/interface.IGold.html">IGold</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IInvestmentStrategy.sol/interface.IInvestmentStrategy.html">IInvestmentStrategy</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IItem.sol/interface.IItem.html">IItem</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IMarketplace.sol/interface.IMarketplace.html">IMarketplace</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IMilitary.sol/interface.IMilitary.html">IMilitary</a></li><li class="chapter-item "><a href="../../../../src/interfaces/IUSDC.sol/interface.IUSDC.html">IUSDC</a></li></ol></li><li class="chapter-item "><a href="../../../../src/AZWorldsGovernor.sol/contract.AZWorldsGovernor.html">AZWorldsGovernor</a></li><li class="chapter-item "><a href="../../../../src/Bank.sol/contract.Bank.html">Bank</a></li><li class="chapter-item "><a href="../../../../src/Boss.sol/contract.Boss.html">Boss</a></li><li class="chapter-item "><a href="../../../../src/Character.sol/contract.Character.html">Character</a></li><li class="chapter-item "><a href="../../../../src/CharacterPortal.sol/contract.CharacterPortal.html">CharacterPortal</a></li><li class="chapter-item "><a href="../../../../src/CharacterSale.sol/contract.CharacterSale.html">CharacterSale</a></li><li class="chapter-item "><a href="../../../../src/Gold.sol/contract.Gold.html">Gold</a></li><li class="chapter-item "><a href="../../../../src/InvestmentStrategy.sol/contract.InvestmentStrategy.html">InvestmentStrategy</a></li><li class="chapter-item "><a href="../../../../src/Item.sol/contract.Item.html">Item</a></li><li class="chapter-item "><a href="../../../../src/Marketplace.sol/contract.Marketplace.html">Marketplace</a></li><li class="chapter-item "><a href="../../../../src/Military.sol/contract.Military.html">Military</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Foundry Template</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/0x73696d616f/NWorlds" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="contents"><a class="header" href="#contents">Contents</a></h1>
+<ul>
+<li><a href="SignedWadMath.sol/function.wadLn.html">wadLn</a></li>
+<li><a href="SignedWadMath.sol/function.unsafeWadMul.html">unsafeWadMul</a></li>
+<li><a href="SignedWadMath.sol/function.wadPow.html">wadPow</a></li>
+<li><a href="SignedWadMath.sol/function.wadMul.html">wadMul</a></li>
+<li><a href="SignedWadMath.sol/function.toDaysWadUnsafe.html">toDaysWadUnsafe</a></li>
+<li><a href="SignedWadMath.sol/function.unsafeDiv.html">unsafeDiv</a></li>
+<li><a href="SignedWadMath.sol/function.wadDiv.html">wadDiv</a></li>
+<li><a href="SignedWadMath.sol/function.wadExp.html">wadExp</a></li>
+<li><a href="SignedWadMath.sol/function.unsafeWadDiv.html">unsafeWadDiv</a></li>
+<li><a href="SignedWadMath.sol/function.fromDaysWadUnsafe.html">fromDaysWadUnsafe</a></li>
+<li><a href="SignedWadMath.sol/function.toWadUnsafe.html">toWadUnsafe</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../src/dependencies/linearVRGDA/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadLn.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../src/dependencies/linearVRGDA/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../../../src/dependencies/linearVRGDA/utils/SignedWadMath.sol/function.wadLn.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../../solidity.min.js"></script>
+
+
+    </body>
+</html>
