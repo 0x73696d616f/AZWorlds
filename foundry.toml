@@ -5,7 +5,7 @@ out             = 'out'     # The ouput directory
 libs            = ['lib']   # A list of library directories
 solc_version    = '0.8.8'   # Override for the solc version (setting this ignores `auto_detect_solc`)
 optimizer       = true      # Enable or disable the solc optimizer
-optimizer_runs  = 100         # The number of optimizer runs
+optimizer_runs  = 1000       # The number of optimizer runs
 verbosity       = 3         # The verbosity of tests
 chainId         = 1         # The chain for tests
 
@@ -29,6 +29,7 @@ arbitrum = "${RPC_URL_ARBITRUM}"
 avalanche = "${RPC_URL_AVALANCHE}"
 fuji = "${RPC_URL_FUJI}"
 goerli   = "${RPC_URL_GOERLI}"
+sepolia =  "${RPC_URL_SEPOLIA}"
 mainnet  = "${RPC_URL_MAINNET}"
 optimism = "${RPC_URL_OPTIMISM}"
 polygon  = "${RPC_URL_POLYGON}"
@@ -38,6 +39,7 @@ arbitrum  = { key = "${ARBISCAN_KEY}",           url = "https://api.arbiscan.io/
 avalanche = { key = "${SNOWTRACE_KEY}",          url = "https://api.snowtrace.io/api" }
 fuji =      { key = "${SNOWTRACE_KEY}",          url = "https://api-testnet.snowtrace.io/api" }
 goerli    = { key = "${ETHERSCAN_KEY}",          url = "https://api-goerli.etherscan.io/api" }
+sepolia   = { key = "${ETHERSCAN_KEY}",          url = "https://api-sepolia.etherscan.io/api" }
 mainnet   = { key = "${ETHERSCAN_KEY}" }
 optimism  = { key = "${OPTIMISM_ETHERSCAN_KEY}", url = "https://api-optimistic.etherscan.io/api" }
 polygon   = { key = "${POLYGONSCAN_KEY}",        url = "https://api.polygonscan.com/api" }

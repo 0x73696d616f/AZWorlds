@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { IMilitary } from "./interfaces/IMilitary.sol";
-import { Character as Char } from "./Character.sol";
+import { ICharacter as Char } from "./interfaces/ICharacter.sol";
 
 contract Military is IMilitary {
     function joinTheArmy(Char.CharInfo calldata charInfo_) external override { }

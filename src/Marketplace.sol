@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { IMarketplace } from "./interfaces/IMarketplace.sol";
-import { Character as Char } from "./Character.sol";
+import { ICharacter as Char } from "./interfaces/ICharacter.sol";
 
 contract Marketplace is IMarketplace {
     function placeOrders(Order[] calldata orders_) external override { }

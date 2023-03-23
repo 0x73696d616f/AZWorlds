@@ -27,37 +27,6 @@ interface IONFT721Core is IERC165 {
     event CreditCleared(bytes32 _hashedPayload);
 
     /**
-     * @dev send token `_tokenId` to (`_dstChainId`, `_toAddress`) from `_from`
-     * `_toAddress` can be any size depending on the `dstChainId`.
-     * `_zroPaymentAddress` set to address(0x0) if not paying in ZRO (LayerZero Token)
-     * `_adapterParams` is a flexible bytes array to indicate messaging adapter services
-     */
-    function sendFrom(
-        address _from,
-        uint16 _dstChainId,
-        bytes calldata _toAddress,
-        uint256 _tokenId,
-        address payable _refundAddress,
-        address _zroPaymentAddress,
-        bytes calldata _adapterParams
-    ) external payable;
-    /**
-     * @dev send tokens `_tokenIds[]` to (`_dstChainId`, `_toAddress`) from `_from`
-     * `_toAddress` can be any size depending on the `dstChainId`.
-     * `_zroPaymentAddress` set to address(0x0) if not paying in ZRO (LayerZero Token)
-     * `_adapterParams` is a flexible bytes array to indicate messaging adapter services
-     */
-    function sendBatchFrom(
-        address _from,
-        uint16 _dstChainId,
-        bytes calldata _toAddress,
-        uint256[] calldata _tokenIds,
-        address payable _refundAddress,
-        address _zroPaymentAddress,
-        bytes calldata _adapterParams
-    ) external payable;
-
-    /**
      * @dev estimate send token `_tokenId` to (`_dstChainId`, `_toAddress`)
      * _dstChainId - L0 defined chain id to send tokens too
      * _toAddress - dynamic bytes array which contains the address to whom you are sending tokens to on the dstChain
@@ -70,7 +39,8 @@ interface IONFT721Core is IERC165 {
         bytes calldata _toAddress,
         uint256 _tokenId,
         bool _useZro,
-        bytes calldata _adapterParams
+        bytes calldata _adapterParams,
+        bytes memory _data
     ) external view returns (uint256 nativeFee, uint256 zroFee);
     /**
      * @dev estimate send token `_tokenId` to (`_dstChainId`, `_toAddress`)
@@ -85,6 +55,7 @@ interface IONFT721Core is IERC165 {
         bytes calldata _toAddress,
         uint256[] calldata _tokenIds,
         bool _useZro,
-        bytes calldata _adapterParams
+        bytes calldata _adapterParams,
+        bytes[] memory _data
     ) external view returns (uint256 nativeFee, uint256 zroFee);
 }

@@ -35,9 +35,12 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         bytes memory _toAddress,
         uint256 _tokenId,
         bool _useZro,
-        bytes memory _adapterParams
+        bytes memory _adapterParams,
+        bytes memory _data
     ) public view virtual override returns (uint256 nativeFee, uint256 zroFee) {
-        return estimateSendBatchFee(_dstChainId, _toAddress, _toSingletonArray(_tokenId), _useZro, _adapterParams);
+        return estimateSendBatchFee(
+            _dstChainId, _toAddress, _toSingletonArray(_tokenId), _useZro, _adapterParams, _toSingletonArray(_data)
+        );
     }
 
     function estimateSendBatchFee(
@@ -45,42 +48,11 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         bytes memory _toAddress,
         uint256[] memory _tokenIds,
         bool _useZro,
-        bytes memory _adapterParams
+        bytes memory _adapterParams,
+        bytes[] memory _data
     ) public view virtual override returns (uint256 nativeFee, uint256 zroFee) {
-        bytes memory payload = abi.encode(_toAddress, _tokenIds);
+        bytes memory payload = abi.encode(_toAddress, _tokenIds, _data);
         return lzEndpoint.estimateFees(_dstChainId, address(this), payload, _useZro, _adapterParams);
-    }
-
-    function sendFrom(
-        address _from,
-        uint16 _dstChainId,
-        bytes memory _toAddress,
-        uint256 _tokenId,
-        address payable _refundAddress,
-        address _zroPaymentAddress,
-        bytes memory _adapterParams
-    ) public payable virtual override {
-        _send(
-            _from,
-            _dstChainId,
-            _toAddress,
-            _toSingletonArray(_tokenId),
-            _refundAddress,
-            _zroPaymentAddress,
-            _adapterParams
-        );
-    }
-
-    function sendBatchFrom(
-        address _from,
-        uint16 _dstChainId,
-        bytes memory _toAddress,
-        uint256[] memory _tokenIds,
-        address payable _refundAddress,
-        address _zroPaymentAddress,
-        bytes memory _adapterParams
-    ) public payable virtual override {
-        _send(_from, _dstChainId, _toAddress, _tokenIds, _refundAddress, _zroPaymentAddress, _adapterParams);
     }
 
     function _send(
@@ -90,7 +62,8 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         uint256[] memory _tokenIds,
         address payable _refundAddress,
         address _zroPaymentAddress,
-        bytes memory _adapterParams
+        bytes memory _adapterParams,
+        bytes[] memory _data
     ) internal virtual {
         // allow 1 by default
         require(_tokenIds.length > 0, "LzApp: tokenIds[] is empty");
@@ -99,11 +72,7 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
             "ONFT721: batch size exceeds dst batch limit"
         );
 
-        for (uint256 i = 0; i < _tokenIds.length; i++) {
-            _debitFrom(_from, _dstChainId, _toAddress, _tokenIds[i]);
-        }
-
-        bytes memory payload = abi.encode(_toAddress, _tokenIds);
+        bytes memory payload = abi.encode(_toAddress, _tokenIds, _data);
 
         _checkGasLimit(
             _dstChainId, FUNCTION_TYPE_SEND, _adapterParams, dstChainIdToTransferGas[_dstChainId] * _tokenIds.length
@@ -119,14 +88,15 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         bytes memory _payload
     ) internal virtual override {
         // decode and load the toAddress
-        (bytes memory toAddressBytes, uint256[] memory tokenIds) = abi.decode(_payload, (bytes, uint256[]));
+        (bytes memory toAddressBytes, uint256[] memory tokenIds, bytes[] memory data) =
+            abi.decode(_payload, (bytes, uint256[], bytes[]));
 
         address toAddress;
         assembly {
             toAddress := mload(add(toAddressBytes, 20))
         }
 
-        uint256 nextIndex = _creditTill(_srcChainId, toAddress, 0, tokenIds);
+        uint256 nextIndex = _creditTill(_srcChainId, toAddress, 0, tokenIds, data);
         if (nextIndex < tokenIds.length) {
             // not enough gas to complete transfers, store to be cleared in another tx
             bytes32 hashedPayload = keccak256(_payload);
@@ -142,13 +112,14 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         bytes32 hashedPayload = keccak256(_payload);
         require(storedCredits[hashedPayload].creditsRemain, "ONFT721: no credits stored");
 
-        (, uint256[] memory tokenIds) = abi.decode(_payload, (bytes, uint256[]));
+        (, uint256[] memory tokenIds, bytes[] memory data) = abi.decode(_payload, (bytes, uint256[], bytes[]));
 
         uint256 nextIndex = _creditTill(
             storedCredits[hashedPayload].srcChainId,
             storedCredits[hashedPayload].toAddress,
             storedCredits[hashedPayload].index,
-            tokenIds
+            tokenIds,
+            data
         );
         require(nextIndex > storedCredits[hashedPayload].index, "ONFT721: not enough gas to process credit transfer");
 
@@ -166,16 +137,19 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
 
     // When a srcChain has the ability to transfer more chainIds in a single tx than the dst can do.
     // Needs the ability to iterate and stop if the minGasToTransferAndStore is not met
-    function _creditTill(uint16 _srcChainId, address _toAddress, uint256 _startIndex, uint256[] memory _tokenIds)
-        internal
-        returns (uint256)
-    {
+    function _creditTill(
+        uint16 _srcChainId,
+        address _toAddress,
+        uint256 _startIndex,
+        uint256[] memory _tokenIds,
+        bytes[] memory _data
+    ) internal returns (uint256) {
         uint256 i = _startIndex;
         while (i < _tokenIds.length) {
             // if not enough gas to process, store this index for next loop
             if (gasleft() < minGasToTransferAndStore) break;
 
-            _creditTo(_srcChainId, _toAddress, _tokenIds[i]);
+            _creditTo(_srcChainId, _toAddress, _tokenIds[i], _data[i]);
             i++;
         }
 
@@ -201,15 +175,17 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
         dstChainIdToBatchLimit[_dstChainId] = _dstChainIdToBatchLimit;
     }
 
-    function _debitFrom(address _from, uint16 _dstChainId, bytes memory _toAddress, uint256 _tokenId)
-        internal
-        virtual;
-
-    function _creditTo(uint16 _srcChainId, address _toAddress, uint256 _tokenId) internal virtual;
+    function _creditTo(uint16 _srcChainId, address _toAddress, uint256 _tokenId, bytes memory _data) internal virtual;
 
     function _toSingletonArray(uint256 element) internal pure returns (uint256[] memory) {
         uint256[] memory array = new uint[](1);
         array[0] = element;
+        return array;
+    }
+
+    function _toSingletonArray(bytes memory data) internal pure returns (bytes[] memory) {
+        bytes[] memory array = new bytes[](1);
+        array[0] = data;
         return array;
     }
 }
