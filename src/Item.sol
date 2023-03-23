@@ -14,12 +14,12 @@ contract Item is IItem, ONFT1155 {
     }
 
     function burnBatch(address from, uint256[] memory ids, uint256[] memory amounts) external override {
-        //_validateSender();
+        _validateSender();
         _burnBatch(from, ids, amounts);
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts) external override {
-        //_validateSender();
+        _validateSender();
         _mintBatch(to, ids, amounts, "");
     }
 

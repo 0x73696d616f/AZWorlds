@@ -16,7 +16,7 @@ import { CharacterPortal } from "./CharacterPortal.sol";
 contract Character is ICharacter, ERC721Votes {
     CharacterPortal private immutable _portal;
     IItem private immutable _item;
-    IBank private immutable _bank;
+    IBank internal immutable _bank;
     mapping(uint256 => bytes32) private _charInfoHashes;
 
     constructor(IBank bank_, IItem item_, address lzEndpoint_) ERC721("Character", "CHAR") EIP712("Character", "1") {
