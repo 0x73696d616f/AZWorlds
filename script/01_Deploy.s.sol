@@ -8,6 +8,7 @@ import { AZWorldsGovernor } from "src/AZWorldsGovernor.sol";
 import { Character } from "src/Character.sol";
 import { Bank } from "src/Bank.sol";
 import { Item } from "src/Item.sol";
+import { Marketplace } from "src/Marketplace.sol";
 import { ICharacter } from "src/interfaces/ICharacter.sol";
 
 contract Deploy is Script {
@@ -36,10 +37,12 @@ contract Deploy is Script {
         uint64 nonce_ = vm.getNonce(_deployerAddress);
         address itemAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 1);
         address bankAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 2);
-        Character character_ = new Character(Bank(bankAddress_), Item(itemAddress_), _layerZeroEndpoint);
+        address marketPlaceAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 3);
 
-        Item item_ = new Item(address(character_), _layerZeroEndpoint);
-        Bank bank_ = new Bank(address(character_), _layerZeroEndpoint, _asset);
+        Character character_ = new Character(Bank(bankAddress_), Item(itemAddress_), _layerZeroEndpoint);
+        Item item_ = new Item(address(character_), marketPlaceAddress_, _layerZeroEndpoint);
+        Bank bank_ = new Bank(address(character_), marketPlaceAddress_, _layerZeroEndpoint, _asset);
+        Marketplace marketplace_ = new Marketplace(item_, bank_);
 
         uint256[] memory amounts_ = new uint256[](1);
         amounts_[0] = 1;

@@ -1,24 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import { ICharacter as Char } from "./ICharacter.sol";
-
 interface IMarketplace {
-    struct Order {
+    struct SellOrder {
         address seller;
-        uint64 itemId;
-        uint128 goldPrice;
+        uint48 itemId;
+        uint48 price;
     }
 
-    function placeOrders(Order[] calldata orders_) external;
+    struct BuyOrder {
+        address buyer;
+        uint48 itemId;
+        uint48 price;
+    }
 
-    function unequipItemsAndPlaceOrders(Order[] calldata orders_, Char.CharInfo memory charInfo_) external;
+    error NoOrdersError();
+    error NotBuyerError(uint256 buyOrderId_);
+    error NotSellerError(uint256 sellOrderId_);
+    error SellOrderDoesNotExistError(uint256 sellOrderId_);
+    error BuyOrderDoesNotExistError(uint256 buyOrderId_);
 
-    function buyOrders(Order[] calldata orders_) external;
+    function placeOrders(SellOrder[] calldata sellOrders_, BuyOrder[] calldata buyOrders_) external;
 
-    function buyOrdersAndEquipItems(Order[] calldata orders_, Char.CharInfo memory charInfo_) external;
+    function fullfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 
-    function cancelOrders(Order[] calldata orders_) external;
-
-    function cancelOrdersAndEquipItems(Order[] calldata orders_, Char.CharInfo memory charInfo_) external;
+    function cancelOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 }

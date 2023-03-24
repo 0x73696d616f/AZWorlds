@@ -9,7 +9,10 @@ import { IBank } from "src/interfaces/IBank.sol";
 import { Gold } from "src/Gold.sol";
 
 contract Bank is IBank, ERC4626, Gold {
-    constructor(address character_, address lzEndpoint_, IERC20 asset_) Gold(character_, lzEndpoint_) ERC4626(asset_) { }
+    constructor(address character_, address marketplace_, address lzEndpoint_, IERC20 asset_)
+        Gold(character_, marketplace_, lzEndpoint_)
+        ERC4626(asset_)
+    { }
 
     function decimals() public pure override(ERC20, ERC4626, IERC20Metadata) returns (uint8) {
         return 18;

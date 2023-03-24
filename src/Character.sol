@@ -128,8 +128,8 @@ contract Character is ICharacter, ERC721Votes {
             _transfer(address(this), toAddress_, tokenId_);
         }
         (bytes32 charInfoHash_, uint256 equippedGold_) = abi.decode(data_, (bytes32, uint256));
-        if (equippedGold_ > 0) _bank.mint(address(this), equippedGold_);
         _charInfoHashes[tokenId_] = charInfoHash_;
+        if (equippedGold_ > 0) _bank.mint(address(this), equippedGold_);
     }
 
     function validateCharInfo(CharInfo calldata charInfo_) public view override {
