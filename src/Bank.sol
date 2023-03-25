@@ -14,6 +14,11 @@ contract Bank is IBank, ERC4626, Gold {
         ERC4626(asset_)
     { }
 
+    function depositAndNotify(uint256 amount_, address to_, bytes calldata data) external override {
+        deposit(amount_, to_);
+        to_.call(data);
+    }
+
     function decimals() public pure override(ERC20, ERC4626, IERC20Metadata) returns (uint8) {
         return 18;
     }

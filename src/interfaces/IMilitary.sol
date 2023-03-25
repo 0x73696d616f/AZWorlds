@@ -1,18 +1,36 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import { ICharacter as Char } from "./ICharacter.sol";
+import { ICharacter as IChar } from "./ICharacter.sol";
 
 interface IMilitary {
-    function joinTheArmy(Char.CharInfo calldata charInfo_) external;
+    struct Deposit {
+        uint192 amount;
+        uint64 expireTimestamp;
+    }
 
-    function equipItemsAndJoinTheArmy(Char.CharInfo memory charInfo_, uint256[] calldata itemIds_) external;
+    struct CharInfo {
+        uint224 goldPerPower;
+        uint32 power;
+    }
 
-    function leaveTheArmy(uint256 charId_) external;
+    error NotBankError(address msgSender_);
+    error NotCharacterError(address msgSender_);
+    error NotCharOwnerError(uint256 charId_, address msgSender_);
+    error NotEnlistedError(uint256 charId_);
+    error ZeroPowerChangeError(uint256 charId_);
 
-    function leaveTheArmyAndEquipGold(Char.CharInfo memory charInfo_) external;
+    function deposit(uint256 amount_) external;
 
-    function modifyPower(uint256 charId_, uint256 powerChange_) external;
+    function join(IChar.CharInfo calldata charInfo_) external;
+
+    function leave(uint256 charId_) external;
+
+    function modifyPower(uint256 charId_, int256 powerChange_) external;
+
+    function getRewards(uint256 charId_) external;
+
+    function previewRewards(uint256 charId_) external view returns (uint256);
 
     function isCharEnlisted(uint256 charId_) external view returns (bool);
 }

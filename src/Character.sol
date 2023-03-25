@@ -132,8 +132,8 @@ contract Character is ICharacter, ERC721Votes {
         if (equippedGold_ > 0) _bank.mint(address(this), equippedGold_);
     }
 
-    function validateCharInfo(CharInfo calldata charInfo_) public view override {
-        if (ownerOf(charInfo_.charId) != msg.sender) revert NotOwnerError(msg.sender);
+    function validateCharInfo(CharInfo calldata charInfo_, address owner_) public view override {
+        if (ownerOf(charInfo_.charId) != owner_) revert NotOwnerError(msg.sender);
         if (_charInfoHashes[charInfo_.charId] != keccak256(abi.encode(charInfo_))) {
             revert InvalidCharInfoError(charInfo_);
         }
@@ -144,7 +144,7 @@ contract Character is ICharacter, ERC721Votes {
     }
 
     function _deleteCharInfo(CharInfo calldata charInfo_) internal {
-        validateCharInfo(charInfo_);
+        validateCharInfo(charInfo_, msg.sender);
         _transfer(msg.sender, address(this), charInfo_.charId);
         delete _charInfoHashes[charInfo_.charId];
     }

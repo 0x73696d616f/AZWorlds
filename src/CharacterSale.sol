@@ -54,7 +54,7 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
                 msg.sender, address(this), usdcSent_, 0, type(uint256).max, 0, signature_.v, signature_.r, signature_.s
             );
 
-            _bank.deposit(price, _military);
+            _bank.depositAndNotify(price, _military, abi.encodeWithSignature("deposit(uint256)", price));
             if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(msg.sender, usdcSent_ - price);
         }
     }

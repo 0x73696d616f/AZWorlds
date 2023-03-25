@@ -27,7 +27,7 @@ interface ICharacter is IERC721, IVotes {
 
     function dropGold(CharInfo memory charInfo_, uint256 gold_) external;
 
-    function validateCharInfo(CharInfo calldata charInfo_) external;
+    function validateCharInfo(CharInfo calldata charInfo_, address owner_) external;
 
     /**
      * @dev send token `_tokenId` to (`_dstChainId`, `_toAddress`) from `_from`
