@@ -5,14 +5,18 @@ import { ONFT1155 } from "./dependencies/layerZero/onft1155/ONFT1155.sol";
 import { IItem } from "./interfaces/IItem.sol";
 
 contract Item is IItem, ONFT1155 {
-    address private immutable _character;
-    address private immutable _marketplace;
+    address public immutable _character;
+    address public immutable _marketplace;
+    address public immutable _boss;
 
-    error NotCharacterError(address sender);
+    error NotValidSender(address sender);
 
-    constructor(address character_, address marketplace_, address lzEndpoint_) ONFT1155("Item", lzEndpoint_) {
+    constructor(address character_, address marketplace_, address boss_, address lzEndpoint_)
+        ONFT1155("Item", lzEndpoint_)
+    {
         _character = character_;
         _marketplace = marketplace_;
+        _boss = boss_;
     }
 
     function burn(address from, uint256 id) external override {
@@ -41,6 +45,8 @@ contract Item is IItem, ONFT1155 {
     }
 
     function _validateSender() internal view {
-        if (msg.sender != _character && msg.sender != _marketplace) revert NotCharacterError(msg.sender);
+        if (msg.sender != _character && msg.sender != _marketplace && msg.sender != _boss) {
+            revert NotValidSender(msg.sender);
+        }
     }
 }

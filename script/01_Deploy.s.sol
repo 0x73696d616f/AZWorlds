@@ -9,6 +9,7 @@ import { Character } from "src/Character.sol";
 import { Bank } from "src/Bank.sol";
 import { Item } from "src/Item.sol";
 import { Marketplace } from "src/Marketplace.sol";
+import { Boss } from "src/Boss.sol";
 import { ICharacter } from "src/interfaces/ICharacter.sol";
 
 contract Deploy is Script {
@@ -16,12 +17,16 @@ contract Deploy is Script {
     address private _deployerAddress;
     address private _layerZeroEndpoint;
     IERC20 private _asset;
+    address private _link;
+    address private _vrf2Wrapper;
 
     function setUp() public {
         _deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         _deployerAddress = vm.addr(_deployerPrivateKey);
         _layerZeroEndpoint = vm.addr(_deployerPrivateKey);
         _asset = IERC20(vm.addr(10));
+        _link = vm.addr(11);
+        _vrf2Wrapper = vm.addr(12);
     }
 
     /// @dev You can send multiple transactions inside a single script.
@@ -38,11 +43,13 @@ contract Deploy is Script {
         address itemAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 1);
         address bankAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 2);
         address marketPlaceAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 3);
+        address bossAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 4);
 
         Character character_ = new Character(Bank(bankAddress_), Item(itemAddress_), _layerZeroEndpoint);
-        Item item_ = new Item(address(character_), marketPlaceAddress_, _layerZeroEndpoint);
+        Item item_ = new Item(address(character_), marketPlaceAddress_, bossAddress_, _layerZeroEndpoint);
         Bank bank_ = new Bank(address(character_), marketPlaceAddress_, _layerZeroEndpoint, _asset);
         Marketplace marketplace_ = new Marketplace(item_, bank_);
+        Boss boss_ = new Boss(item_, character_, _link, _vrf2Wrapper);
 
         uint256[] memory amounts_ = new uint256[](1);
         amounts_[0] = 1;
