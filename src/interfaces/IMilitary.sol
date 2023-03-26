@@ -22,11 +22,13 @@ interface IMilitary {
 
     function deposit(uint256 amount_) external;
 
-    function join(IChar.CharInfo calldata charInfo_) external;
+    function join(uint256 charId_) external;
 
     function leave(uint256 charId_) external;
 
-    function modifyPower(uint256 charId_, int256 powerChange_) external;
+    function leave(uint256 charId_, address owner_, uint256 charPower_) external;
+
+    function modifyPower(uint256 charId_, address owner_, uint256 oldPower_, int256 powerChange_) external;
 
     function getRewards(uint256 charId_) external;
 

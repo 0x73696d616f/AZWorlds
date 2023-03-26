@@ -5,8 +5,8 @@ import { OFT } from "./dependencies/layerZero/oft/OFT.sol";
 import { IGold } from "./interfaces/IGold.sol";
 
 contract Gold is OFT, IGold {
-    address immutable _character;
-    address immutable _marketplace;
+    address public immutable _character;
+    address public immutable _marketplace;
 
     error NotCharacterError(address sender);
     error NotMarketplaceError(address sender);

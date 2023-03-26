@@ -45,7 +45,7 @@ contract Item is IItem, ONFT1155 {
     }
 
     function _validateSender() internal view {
-        if (msg.sender != _character && msg.sender != _marketplace && msg.sender != _boss) {
+        if (msg.sender != _character && msg.sender != _marketplace && msg.sender != _boss && msg.sender != owner()) {
             revert NotValidSender(msg.sender);
         }
     }

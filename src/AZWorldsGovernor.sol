@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { Governor, IGovernor } from "@openzeppelin/governance/Governor.sol";
-import { GovernorSettings } from "@openzeppelin/governance/extensions/GovernorSettings.sol";
-import { GovernorCountingSimple } from "@openzeppelin/governance/extensions/GovernorCountingSimple.sol";
-import { GovernorVotes, IVotes } from "@openzeppelin/governance/extensions/GovernorVotes.sol";
-import { GovernorTimelockControl } from "@openzeppelin/governance/extensions/GovernorTimelockControl.sol";
-import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
+import { Governor, IGovernor } from "@openzeppelin/contracts/governance/Governor.sol";
+import { GovernorSettings } from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import { GovernorCountingSimple } from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import { GovernorVotes, IVotes } from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import { GovernorTimelockControl } from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import { TimelockController } from "@openzeppelin/contracts/governance/TimelockController.sol";
 
 contract AZWorldsGovernor is
     Governor,

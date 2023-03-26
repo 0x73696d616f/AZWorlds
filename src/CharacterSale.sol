@@ -10,10 +10,10 @@ import { LinearVRGDA } from "src/dependencies/linearVRGDA/LinearVRGDA.sol";
 import { Character } from "./Character.sol";
 
 contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
-    address private immutable _usdc;
-    uint256 private immutable _chainId;
-    uint256 private immutable _nrChains;
-    address private immutable _military;
+    address public immutable _usdc;
+    uint256 public immutable _chainId;
+    uint256 public immutable _nrChains;
+    address public immutable _military;
 
     uint256 public totalSold; // The total number of tokens sold so far.
     uint256 public immutable startTime = block.timestamp; // When VRGDA sales begun.
@@ -34,8 +34,8 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
             10e18 // Per time unit.
         )
     {
-        bank_.approve(address(this), type(uint256).max);
         _usdc = usdc_;
+        IUSDC(_usdc).approve(address(bank_), type(uint256).max);
         _military = military_;
         _chainId = chainId_;
         _nrChains = nrChains_;
@@ -48,11 +48,11 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
 
             require(usdcSent_ >= price, "UNDERPAID"); // Don't allow underpaying.
 
-            _mint(msg.sender, mintedId_); // Mint the NFT using mintedId.
-
             IUSDC(_usdc).transferWithAuthorization(
                 msg.sender, address(this), usdcSent_, 0, type(uint256).max, 0, signature_.v, signature_.r, signature_.s
             );
+
+            _mint(msg.sender, mintedId_); // Mint the NFT using mintedId.
 
             _bank.depositAndNotify(price, _military, abi.encodeWithSignature("deposit(uint256)", price));
             if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(msg.sender, usdcSent_ - price);

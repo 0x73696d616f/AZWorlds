@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import { ERC721Votes } from "@openzeppelin/token/ERC721/extensions/ERC721Votes.sol";
-import { EIP712 } from "@openzeppelin/utils/cryptography/EIP712.sol";
-import { ERC721 } from "@openzeppelin/token/ERC721/ERC721.sol";
-import { IERC165 } from "@openzeppelin/utils/introspection/IERC165.sol";
-import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol";
+import { ERC721Votes } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
+import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { ICharacter } from "./interfaces/ICharacter.sol";
 import { IBank } from "./interfaces/IBank.sol";
@@ -14,10 +14,10 @@ import { IItem } from "./interfaces/IItem.sol";
 import { CharacterPortal } from "./CharacterPortal.sol";
 
 contract Character is ICharacter, ERC721Votes {
-    CharacterPortal private immutable _portal;
-    IItem private immutable _item;
-    IBank internal immutable _bank;
-    mapping(uint256 => bytes32) private _charInfoHashes;
+    CharacterPortal public immutable _portal;
+    IItem public immutable _item;
+    IBank public immutable _bank;
+    mapping(uint256 => CharInfo) public _charInfos;
 
     constructor(IBank bank_, IItem item_, address lzEndpoint_) ERC721("Character", "CHAR") EIP712("Character", "1") {
         _bank = bank_;
@@ -25,101 +25,81 @@ contract Character is ICharacter, ERC721Votes {
         _item = item_;
     }
 
-    function mint(address to_, uint256 charId_) external override {
-        _mint(to_, charId_);
-        _charInfoHashes[charId_] = keccak256(abi.encode(CharInfo(charId_, 1, 1, 0, new bytes(625))));
+    modifier onlyCharOwner(uint256 charId_) {
+        _validateCharOwner(charId_);
+        _;
     }
 
-    function equipItems(CharInfo memory charInfo_, uint256[] calldata itemIds_) external {
-        _validateCharInfo(charInfo_);
+    modifier onlyPortal() {
+        if (msg.sender != address(_portal)) revert OnlyPortalError(msg.sender);
+        _;
+    }
 
+    function _mint(address to_, uint256 charId_) internal override {
+        super._mint(to_, charId_);
+        _charInfos[charId_] = CharInfo(uint32(charId_), 1, 0, 0);
+    }
+
+    function equipItems(uint256 charId_, uint256[] calldata itemIds_) external override onlyCharOwner(charId_) {
         uint256[] memory amounts_ = new uint256[](itemIds_.length);
-        for (uint256 i; i < itemIds_.length;) {
-            amounts_[i] = 1;
-            unchecked {
-                ++i;
-            }
-        }
-        _item.burnBatch(msg.sender, itemIds_, amounts_);
-
-        for (uint256 i; i < itemIds_.length;) {
-            uint256 itemId_ = itemIds_[i];
-            if (itemId_ >= charInfo_.equippedItems.length * 8) _expandCharInfo(charInfo_);
-            charInfo_.equippedItems[itemId_ / 8] |= bytes1(uint8(1)) << itemId_ % 8;
-            unchecked {
-                ++i;
-            }
-        }
-        _charInfoHashes[charInfo_.charId] = keccak256(abi.encode(charInfo_));
-    }
-
-    function unequipItems(CharInfo memory charInfo_, uint256[] calldata itemIds_) external {
-        _validateCharInfo(charInfo_);
-        uint256[] memory amounts_ = new uint256[](itemIds_.length);
-        for (uint256 i; i < itemIds_.length;) {
-            amounts_[i] = 1;
-            uint256 itemId_ = itemIds_[i];
-            if (itemId_ >= charInfo_.equippedItems.length * 8) _expandCharInfo(charInfo_);
-            charInfo_.equippedItems[itemId_ / 8] &= ~(bytes1(uint8(1)) << itemId_ % 8);
-            unchecked {
-                ++i;
-            }
-        }
-        _charInfoHashes[charInfo_.charId] = keccak256(abi.encode(charInfo_));
-        _item.mintBatch(msg.sender, itemIds_, amounts_);
-    }
-
-    function carryGold(CharInfo memory charInfo_, uint256 goldAmount_) external {
-        _validateCharInfo(charInfo_);
-        _bank.transferFrom(msg.sender, address(this), goldAmount_);
-        charInfo_.equippedGold += goldAmount_;
-        _charInfoHashes[charInfo_.charId] = keccak256(abi.encode(charInfo_));
-    }
-
-    function dropGold(CharInfo memory charInfo_, uint256 goldAmount_) external {
-        _validateCharInfo(charInfo_);
-        charInfo_.equippedGold -= goldAmount_;
-        _charInfoHashes[charInfo_.charId] = keccak256(abi.encode(charInfo_));
-        _bank.transfer(msg.sender, goldAmount_);
-    }
-
-    function sendFrom(address from_, uint16 dstChainId_, address toAddress_, CharInfo calldata charInfo_)
-        external
-        payable
-        override
-    {
-        _deleteCharInfo(charInfo_);
-        if (charInfo_.equippedGold > 0) _bank.burn(address(this), charInfo_.equippedGold);
-        bytes[] memory data_ = new bytes[](1);
-        data_[0] = abi.encode(keccak256(abi.encode(charInfo_)), charInfo_.equippedGold);
-        uint256[] memory tokenId_ = new uint256[](1);
-        tokenId_[0] = charInfo_.charId;
-        _portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
-    }
-
-    function sendBatchFrom(address from_, uint16 dstChainId_, address toAddress_, CharInfo[] calldata charInfos_)
-        external
-        payable
-        override
-    {
-        uint256[] memory tokenIds_ = new uint256[](charInfos_.length);
-        bytes[] memory data_ = new bytes[](charInfos_.length);
-
-        for (uint256 i_; i_ < charInfos_.length;) {
-            tokenIds_[i_] = charInfos_[i_].charId;
-            _deleteCharInfo(charInfos_[i_]);
-            if (charInfos_[i_].equippedGold > 0) _bank.burn(address(this), charInfos_[i_].equippedGold);
-            data_[i_] = abi.encode(keccak256(abi.encode(charInfos_[i_])), charInfos_[i_].equippedGold);
+        uint32 power_ = _charInfos[charId_].power;
+        for (uint256 i_; i_ < itemIds_.length;) {
+            amounts_[i_] = 1;
+            power_ += uint32(itemIds_[i_]);
             unchecked {
                 ++i_;
             }
         }
-        _portal.send(from_, dstChainId_, toAddress_, tokenIds_, payable(msg.sender), data_);
+        _item.burnBatch(msg.sender, itemIds_, amounts_);
+
+        _charInfos[charId_].power = power_;
     }
 
-    function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external {
-        if (msg.sender != address(_portal)) revert OnlyPortalError(msg.sender);
+    function carryGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
+        _bank.transferFrom(msg.sender, address(this), goldAmount_);
+        _charInfos[charId_].equippedGold += uint160(goldAmount_);
+    }
 
+    function dropGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
+        _charInfos[charId_].equippedGold -= uint160(goldAmount_);
+        _bank.transferFrom(address(this), msg.sender, goldAmount_);
+    }
+
+    function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_)
+        external
+        payable
+        override
+    {
+        CharInfo memory charInfo_ = _charInfos[charId_];
+        _deleteCharInfo(charId_);
+        if (charInfo_.equippedGold > 0) _bank.burn(address(this), uint256(charInfo_.equippedGold));
+        bytes[] memory data_ = new bytes[](1);
+        data_[0] = abi.encode(charInfo_);
+        uint256[] memory tokenId_ = new uint256[](1);
+        tokenId_[0] = charId_;
+        _portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
+    }
+
+    function sendBatchFrom(address from_, uint16 dstChainId_, address toAddress_, uint256[] calldata charIds_)
+        external
+        payable
+        override
+    {
+        bytes[] memory data_ = new bytes[](charIds_.length);
+        CharInfo memory charInfo_;
+        for (uint256 i_; i_ < charIds_.length;) {
+            charInfo_ = _charInfos[charIds_[i_]];
+            _deleteCharInfo(charIds_[i_]);
+            if (charInfo_.equippedGold > 0) _bank.burn(address(this), charInfo_.equippedGold);
+            data_[i_] = abi.encode(charInfo_);
+            unchecked {
+                ++i_;
+            }
+        }
+        _portal.send(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
+    }
+
+    function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external override onlyPortal {
         require(!_exists(tokenId_) || (_exists(tokenId_) && ERC721.ownerOf(tokenId_) == address(this)));
 
         if (!_exists(tokenId_)) {
@@ -127,44 +107,27 @@ contract Character is ICharacter, ERC721Votes {
         } else {
             _transfer(address(this), toAddress_, tokenId_);
         }
-        (bytes32 charInfoHash_, uint256 equippedGold_) = abi.decode(data_, (bytes32, uint256));
-        _charInfoHashes[tokenId_] = charInfoHash_;
-        if (equippedGold_ > 0) _bank.mint(address(this), equippedGold_);
+        (CharInfo memory charInfo_) = abi.decode(data_, (CharInfo));
+        _charInfos[tokenId_] = charInfo_;
+        if (charInfo_.equippedGold > 0) _bank.mint(address(this), charInfo_.equippedGold);
     }
 
-    function validateCharInfo(CharInfo calldata charInfo_, address owner_) public view override {
-        if (ownerOf(charInfo_.charId) != owner_) revert NotOwnerError(msg.sender);
-        if (_charInfoHashes[charInfo_.charId] != keccak256(abi.encode(charInfo_))) {
-            revert InvalidCharInfoError(charInfo_);
-        }
+    function getCharInfo(uint256 charId_) external view override returns (CharInfo memory, address) {
+        return (_charInfos[charId_], ownerOf(charId_));
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, IERC165) returns (bool) {
         return interfaceId == type(ICharacter).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function _deleteCharInfo(CharInfo calldata charInfo_) internal {
-        validateCharInfo(charInfo_, msg.sender);
-        _transfer(msg.sender, address(this), charInfo_.charId);
-        delete _charInfoHashes[charInfo_.charId];
+    function _validateCharOwner(uint256 charId_) internal view {
+        if (ownerOf(charId_) != msg.sender) revert NotOwnerError(msg.sender);
     }
 
-    function _validateCharInfo(CharInfo memory charInfo_) internal view {
-        if (ownerOf(charInfo_.charId) != msg.sender) revert NotOwnerError(msg.sender);
-        if (_charInfoHashes[charInfo_.charId] != keccak256(abi.encode(charInfo_))) {
-            revert InvalidCharInfoError(charInfo_);
-        }
-    }
-
-    function _expandCharInfo(CharInfo memory charInfo_) internal pure {
-        bytes memory newItems_ = new bytes(charInfo_.equippedItems.length * 2);
-        for (uint256 i; i < charInfo_.equippedItems.length;) {
-            newItems_[i] = charInfo_.equippedItems[i];
-            unchecked {
-                ++i;
-            }
-        }
-        charInfo_.equippedItems = newItems_;
+    function _deleteCharInfo(uint256 charId_) internal {
+        _validateCharOwner(charId_);
+        _transfer(msg.sender, address(this), charId_);
+        delete _charInfos[charId_];
     }
 
     function _afterTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)

@@ -15,4 +15,6 @@ interface IUSDC {
     ) external;
 
     function transfer(address to_, uint256 value_) external;
+
+    function approve(address spender_, uint256 value_) external;
 }

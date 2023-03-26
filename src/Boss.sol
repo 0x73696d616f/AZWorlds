@@ -8,7 +8,7 @@ import { ICharacter as IChar } from "./interfaces/ICharacter.sol";
 import { IBoss } from "./interfaces/IBoss.sol";
 
 contract Boss is IBoss, VRFV2WrapperConsumerBase {
-    uint256 public constant ROUND_DURATION = 1 days;
+    uint256 public immutable ROUND_DURATION;
     uint256 public constant MAX_ITEM_ID = 4999;
     uint256 public immutable MAX_NUMBER_SQRT;
 
@@ -19,12 +19,13 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
     IItem public _item;
     IChar public _char;
 
-    constructor(IItem item_, IChar char_, address link_, address vrfV2Wrapper_)
+    constructor(IItem item_, IChar char_, address link_, address vrfV2Wrapper_, uint256 roundDuration_)
         VRFV2WrapperConsumerBase(link_, vrfV2Wrapper_)
     {
         _item = item_;
         _char = char_;
         MAX_NUMBER_SQRT = Babylonian.sqrt(type(uint256).max);
+        ROUND_DURATION = roundDuration_;
     }
 
     function attackBoss(uint256 charId_) external override {

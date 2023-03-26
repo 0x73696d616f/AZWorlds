@@ -17,8 +17,13 @@ contract Military is IMilitary {
     uint256 public _firstExpiringDeposit;
     uint256 public _totalDeposited;
 
-    mapping(uint256 => CharInfo) public _charInfos;
+    mapping(uint256 => uint256) public _goldPerPowerByCharId;
     Deposit[] public _deposits;
+
+    modifier onlyCharacter() {
+        _onlyCharacter();
+        _;
+    }
 
     constructor(IChar character_, address bank_) {
         _char = character_;
@@ -33,71 +38,86 @@ contract Military is IMilitary {
         _totalDeposited += amount_;
     }
 
-    function join(IChar.CharInfo calldata charInfo_) external override {
-        _char.validateCharInfo(charInfo_, msg.sender);
+    function join(uint256 charId_) external override {
+        (IChar.CharInfo memory charInfo_, address owner_) = _char.getCharInfo(charId_);
+        _validateCharOwner(charId_, owner_);
         uint256 goldPerPower_ = _updateExpiredDeposits();
-
-        _charInfos[charInfo_.charId] = CharInfo(uint224(goldPerPower_), uint32(charInfo_.power));
+        _goldPerPowerByCharId[charId_] = goldPerPower_;
         _totalPower += charInfo_.power;
     }
 
     function leave(uint256 charId_) external override {
-        if (_char.ownerOf(charId_) != msg.sender && msg.sender != address(_char)) {
-            revert NotCharOwnerError(charId_, msg.sender);
-        }
-        CharInfo memory charInfo_ = _charInfos[charId_];
-        if (charInfo_.goldPerPower == 0) revert NotEnlistedError(charId_);
-
-        uint256 goldPerPower_ = _updateExpiredDeposits();
-        _totalPower -= charInfo_.power;
-        delete _charInfos[charId_];
-
-        IGold(_bank).transfer(msg.sender, (goldPerPower_ - charInfo_.goldPerPower) * charInfo_.power / PRECISION);
+        (IChar.CharInfo memory charInfo_, address owner_) = _char.getCharInfo(charId_);
+        _validateCharOwner(charId_, owner_);
+        _leave(charId_, owner_, charInfo_.power);
     }
 
-    function modifyPower(uint256 charId_, int256 powerChange_) external override {
-        if (msg.sender != address(_char)) revert NotCharacterError(msg.sender);
+    function leave(uint256 charId_, address owner_, uint256 charPower_) external override onlyCharacter {
+        _leave(charId_, owner_, charPower_);
+    }
+
+    function modifyPower(uint256 charId_, address owner_, uint256 oldPower_, int256 powerChange_)
+        external
+        override
+        onlyCharacter
+    {
         if (powerChange_ == 0) revert ZeroPowerChangeError(charId_);
 
-        CharInfo memory charInfo_ = _charInfos[charId_];
-        if (charInfo_.goldPerPower == 0) revert NotEnlistedError(charId_);
+        uint256 goldPerPowerOfChar_ = _getGoldPerPowerOfChar(charId_);
 
         uint256 goldPerPower_ = _updateExpiredDeposits();
 
-        IGold(_bank).transfer(msg.sender, (goldPerPower_ - charInfo_.goldPerPower) * charInfo_.power / PRECISION);
+        IGold(_bank).transfer(owner_, (goldPerPower_ - goldPerPowerOfChar_) * oldPower_ / PRECISION);
 
-        charInfo_.goldPerPower = uint224(goldPerPower_);
-
-        if (powerChange_ > 0) {
-            _totalPower += uint256(powerChange_);
-            charInfo_.power += uint32(uint256(powerChange_));
-        } else {
-            _totalPower -= uint256(-powerChange_);
-            charInfo_.power -= uint32(uint256(-powerChange_));
-        }
-        _charInfos[charId_] = charInfo_;
+        _totalPower += powerChange_ > 0 ? uint256(powerChange_) : uint256(-powerChange_);
     }
 
-    function getRewards(uint256 charId_) public override {
-        if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
-        CharInfo memory charInfo_ = _charInfos[charId_];
-        if (charInfo_.goldPerPower == 0) revert NotEnlistedError(charId_);
+    function getRewards(uint256 charId_) external override {
+        (IChar.CharInfo memory charInfo_, address owner_) = _char.getCharInfo(charId_);
+        _validateCharOwner(charId_, owner_);
+
+        uint256 goldPerPowerOfChar_ = _getGoldPerPowerOfChar(charId_);
 
         uint256 goldPerPower_ = _updateExpiredDeposits();
-        _charInfos[charId_].goldPerPower = uint224(goldPerPower_);
+        _goldPerPowerByCharId[charId_] = goldPerPower_;
 
-        IGold(_bank).transfer(msg.sender, (goldPerPower_ - charInfo_.goldPerPower) * charInfo_.power / PRECISION);
+        IGold(_bank).transfer(owner_, (goldPerPower_ - goldPerPowerOfChar_) * charInfo_.power / PRECISION);
     }
 
     function previewRewards(uint256 charId_) external view override returns (uint256) {
+        (IChar.CharInfo memory charInfo_,) = _char.getCharInfo(charId_);
         (,, uint256 goldPerPower_,) = _checkExpiredDeposits();
-        CharInfo memory charInfo_ = _charInfos[charId_];
+        uint256 goldPerPowerOfChar_ = _goldPerPowerByCharId[charId_];
 
-        return (goldPerPower_ - charInfo_.goldPerPower) * charInfo_.power / PRECISION;
+        return (goldPerPower_ - goldPerPowerOfChar_) * charInfo_.power / PRECISION;
     }
 
-    function isCharEnlisted(uint256 charId_) external view override returns (bool) {
-        return _charInfos[charId_].goldPerPower > 0;
+    function isCharEnlisted(uint256 charId_) public view override returns (bool) {
+        return _goldPerPowerByCharId[charId_] > 0;
+    }
+
+    function _leave(uint256 charId_, address owner_, uint256 charPower_) internal {
+        uint256 goldPerPowerOfChar_ = _goldPerPowerByCharId[charId_];
+        if (goldPerPowerOfChar_ == 0) revert NotEnlistedError(charId_);
+
+        uint256 goldPerPower_ = _updateExpiredDeposits();
+        _totalPower -= charPower_;
+        delete _goldPerPowerByCharId[charId_];
+
+        IGold(_bank).transfer(owner_, (goldPerPower_ - goldPerPowerOfChar_) * charPower_ / PRECISION);
+    }
+
+    function _validateCharOwner(uint256 charId_, address owner_) internal view {
+        if (owner_ != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
+    }
+
+    function _onlyCharacter() internal view {
+        if (address(_char) != msg.sender) revert NotCharacterError(msg.sender);
+    }
+
+    function _getGoldPerPowerOfChar(uint256 charId_) internal view returns (uint256 goldPerPowerOfChar_) {
+        goldPerPowerOfChar_ = _goldPerPowerByCharId[charId_];
+        if (goldPerPowerOfChar_ == 0) revert NotEnlistedError(charId_);
     }
 
     function _checkExpiredDeposits()

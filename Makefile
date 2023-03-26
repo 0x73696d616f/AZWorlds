@@ -15,7 +15,9 @@ remove :;
 # Install dependencies
 install :;
 	@forge install foundry-rs/forge-std@master --no-commit && \
-	forge install openzeppelin/openzeppelin-contracts@master --no-commit \
+	forge install openzeppelin/openzeppelin-contracts@master --no-commit && \
+	forge install uniswap/v3-core@0.8 --no-commit  && \
+	forge install uniswap/v3-periphery@0.8 --no-commit
 
 # Update dependencies
 update :;
@@ -58,12 +60,24 @@ anvil :;
 
 # This is the private key of account from the mnemonic from the "make anvil" command
 deploy-anvil :;
-	@forge script script/01_Deploy.s.sol:Deploy --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
+	@forge script script/CreateUniswapPool.s.sol:Deploy --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast -vvvv
 
 # Deploy the contract to remote network and verify the code
 deploy-network :;
 	@export FOUNDRY_PROFILE=deploy && \
 	forge script script/01_Deploy.s.sol:Deploy -f ${network} --broadcast --verify --delay 20 --retries 10 -vvvv && \
+	export FOUNDRY_PROFILE=default
+
+# Deploy the contract to remote network and verify the code
+deploy-tokens-network :;
+	@export FOUNDRY_PROFILE=deploy && \
+	forge script script/DeployTokens.s.sol:Deploy -f ${network} --broadcast --verify --delay 20 --retries 10 -vvvv && \
+	export FOUNDRY_PROFILE=default
+
+# Deploy the contract to remote network and verify the code
+deploy-uniswap-network :;
+	@export FOUNDRY_PROFILE=deploy && \
+	forge script script/CreateUniswapPool.s.sol:Deploy -f ${network} --broadcast --verify --delay 20 --retries 10 -vvvv && \
 	export FOUNDRY_PROFILE=default
 
 run-script :;

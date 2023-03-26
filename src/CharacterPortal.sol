@@ -6,7 +6,7 @@ import { Character } from "./Character.sol";
 import { ICharacterPortal } from "./interfaces/ICharacterPortal.sol";
 
 contract CharacterPortal is ICharacterPortal, ONFT721Core {
-    Character private immutable _character;
+    Character public immutable _character;
 
     constructor(uint256 _minGasToTransferAndStore, address _lzEndpoint)
         ONFT721Core(_minGasToTransferAndStore, _lzEndpoint)

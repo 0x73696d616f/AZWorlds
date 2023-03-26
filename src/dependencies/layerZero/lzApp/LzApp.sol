@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/lzApp/ILayerZeroReceiver.sol";
 import "../interfaces/lzApp/ILayerZeroUserApplicationConfig.sol";
 import "../interfaces/lzApp/ILayerZeroEndpoint.sol";
