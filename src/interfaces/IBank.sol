@@ -14,8 +14,6 @@ interface IBank is IERC4626, IGold {
 
     function withdrawInvestment(uint256 amount_) external;
 
-    function claimRewards() external returns (uint256);
-
     function setInvestmentStrategy(IInvestmentStrategy strategy_) external;
 
     function previewRewards() external view returns (uint256);

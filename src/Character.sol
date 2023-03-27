@@ -14,11 +14,11 @@ import { CharacterPortal } from "./CharacterPortal.sol";
 import { IMilitary } from "./interfaces/IMilitary.sol";
 
 contract Character is ICharacter, ERC721Votes {
-    CharacterPortal public immutable _portal;
-    IItem public immutable _item;
-    IBank public immutable _bank;
-    address public immutable _military;
-    address public immutable _boss;
+    CharacterPortal public immutable portal;
+    IItem public immutable item;
+    IBank public immutable bank;
+    address public immutable military;
+    address public immutable boss;
 
     mapping(uint256 => CharInfo) public _charInfos;
 
@@ -26,11 +26,11 @@ contract Character is ICharacter, ERC721Votes {
         ERC721("Character", "CHAR")
         EIP712("Character", "1")
     {
-        _bank = bank_;
-        _portal = new CharacterPortal(10_000, lzEndpoint_);
-        _item = item_;
-        _military = military_;
-        _boss = boss_;
+        bank = bank_;
+        portal = new CharacterPortal(10_000, lzEndpoint_, msg.sender);
+        item = item_;
+        military = military_;
+        boss = boss_;
     }
 
     modifier onlyCharOwner(uint256 charId_) {
@@ -39,12 +39,12 @@ contract Character is ICharacter, ERC721Votes {
     }
 
     modifier onlyPortal() {
-        if (msg.sender != address(_portal)) revert OnlyPortalError(msg.sender);
+        if (msg.sender != address(portal)) revert OnlyPortalError(msg.sender);
         _;
     }
 
     modifier onlyBoss() {
-        if (msg.sender != _boss) revert OnlyBossError(msg.sender);
+        if (msg.sender != boss) revert OnlyBossError(msg.sender);
         _;
     }
 
@@ -64,19 +64,19 @@ contract Character is ICharacter, ERC721Votes {
                 ++i_;
             }
         }
-        _item.burnBatch(msg.sender, itemIds_, amounts_);
-        IMilitary(_military).increasePower(charId_, msg.sender, oldPower_, power_ - oldPower_);
+        item.burnBatch(msg.sender, itemIds_, amounts_);
+        IMilitary(military).increasePower(charId_, msg.sender, oldPower_, power_ - oldPower_);
         _charInfos[charId_].power = power_;
     }
 
     function carryGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
-        _bank.privilegedTransferFrom(msg.sender, address(this), goldAmount_);
+        bank.privilegedTransferFrom(msg.sender, address(this), goldAmount_);
         _charInfos[charId_].equippedGold += uint160(goldAmount_);
     }
 
     function dropGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
         _charInfos[charId_].equippedGold -= uint160(goldAmount_);
-        _bank.transfer(msg.sender, goldAmount_);
+        bank.transfer(msg.sender, goldAmount_);
     }
 
     function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_)
@@ -86,13 +86,13 @@ contract Character is ICharacter, ERC721Votes {
     {
         CharInfo memory charInfo_ = _charInfos[charId_];
         _deleteCharInfo(charId_);
-        if (charInfo_.equippedGold > 0) _bank.burn(address(this), uint256(charInfo_.equippedGold));
-        IMilitary(_military).leave(charId_, msg.sender, charInfo_.power);
+        if (charInfo_.equippedGold > 0) bank.burn(address(this), uint256(charInfo_.equippedGold));
+        IMilitary(military).leave(charId_, msg.sender, charInfo_.power);
         bytes[] memory data_ = new bytes[](1);
         data_[0] = abi.encode(charInfo_);
         uint256[] memory tokenId_ = new uint256[](1);
         tokenId_[0] = charId_;
-        _portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
+        portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
     }
 
     function sendBatchFrom(address from_, uint16 dstChainId_, address toAddress_, uint256[] calldata charIds_)
@@ -105,14 +105,14 @@ contract Character is ICharacter, ERC721Votes {
         for (uint256 i_; i_ < charIds_.length;) {
             charInfo_ = _charInfos[charIds_[i_]];
             _deleteCharInfo(charIds_[i_]);
-            if (charInfo_.equippedGold > 0) _bank.burn(address(this), charInfo_.equippedGold);
-            IMilitary(_military).leave(charInfo_.charId, msg.sender, charInfo_.power);
+            if (charInfo_.equippedGold > 0) bank.burn(address(this), charInfo_.equippedGold);
+            IMilitary(military).leave(charInfo_.charId, msg.sender, charInfo_.power);
             data_[i_] = abi.encode(charInfo_);
             unchecked {
                 ++i_;
             }
         }
-        _portal.send(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
+        portal.send(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
     }
 
     function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external override onlyPortal {
@@ -125,7 +125,7 @@ contract Character is ICharacter, ERC721Votes {
         }
         (CharInfo memory charInfo_) = abi.decode(data_, (CharInfo));
         _charInfos[tokenId_] = charInfo_;
-        if (charInfo_.equippedGold > 0) _bank.mint(address(this), charInfo_.equippedGold);
+        if (charInfo_.equippedGold > 0) bank.mint(address(this), charInfo_.equippedGold);
     }
 
     function getCharInfo(uint256 charId_) external view override returns (CharInfo memory, address) {
@@ -138,7 +138,7 @@ contract Character is ICharacter, ERC721Votes {
 
     function levelUp(uint256 charId_) external override onlyBoss {
         CharInfo memory charInfo_ = _charInfos[charId_];
-        IMilitary(_military).increasePower(charId_, msg.sender, charInfo_.power, 1000);
+        IMilitary(military).increasePower(charId_, msg.sender, charInfo_.power, 1000);
         charInfo_.level += 1000;
         charInfo_.power += 1000;
         _charInfos[charId_] = charInfo_;

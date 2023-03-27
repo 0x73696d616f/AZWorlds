@@ -8,10 +8,11 @@ import { ICharacterPortal } from "./interfaces/ICharacterPortal.sol";
 contract CharacterPortal is ICharacterPortal, ONFT721Core {
     Character public immutable _character;
 
-    constructor(uint256 _minGasToTransferAndStore, address _lzEndpoint)
+    constructor(uint256 _minGasToTransferAndStore, address _lzEndpoint, address owner_)
         ONFT721Core(_minGasToTransferAndStore, _lzEndpoint)
     {
         _character = Character(msg.sender);
+        transferOwnership(owner_);
     }
 
     function send(

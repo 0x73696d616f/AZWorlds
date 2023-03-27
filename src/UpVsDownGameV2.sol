@@ -38,8 +38,7 @@ contract UpVsDownGameV2 is Ownable {
     int32 public GAME_DURATION = 30;
     address public gameController;
     mapping(bytes => Round) public pools;
-    uint256 public feePercentage = 500; // 5 %
-    uint256 public feePercentageForDistributor = 1000; // 10% of feePercentage (0.5 % total)
+    uint256 public feePercentage = 5;
     bool public isRunning;
     bytes public notRunningReason;
 
@@ -47,6 +46,8 @@ contract UpVsDownGameV2 is Ownable {
     IPriceFeed public immutable priceFeed;
     IERC20 public immutable WBTC;
     IERC20 public immutable usdc;
+
+    mapping(address => uint256) public lostGold;
 
     // Errors
 
@@ -111,6 +112,7 @@ contract UpVsDownGameV2 is Ownable {
         priceFeed = oneInchPriceFeed_;
         WBTC = WBTC_;
         usdc = usdc_;
+        gameController = msg.sender;
     }
 
     // Methods
@@ -138,10 +140,6 @@ contract UpVsDownGameV2 is Ownable {
         isRunning = true;
         notRunningReason = "";
         emit GameStarted();
-    }
-
-    function changeFeeForDistributor(uint256 newFeePercentageForDistributor) public onlyOwner {
-        feePercentageForDistributor = newFeePercentageForDistributor;
     }
 
     function createPool(bytes calldata poolId, uint256 minBetAmount, uint256 maxBetAmount, uint256 poolBetsLimit)
@@ -174,7 +172,7 @@ contract UpVsDownGameV2 is Ownable {
         } else if (
             currentRound.endPrice == 0 && int64(uint64(block.timestamp)) > currentRound.roundStartTime + GAME_DURATION
         ) {
-            require(tx.origin == msg.sender, "Only EOA can end the round to prevent price manipulation");
+            require(tx.origin == msg.sender, "Only EOA");
             currentRound.endPrice = int32(uint32(priceFeed.getRate(WBTC, usdc, true)));
 
             emit RoundEnded(
@@ -193,8 +191,8 @@ contract UpVsDownGameV2 is Ownable {
         uint256 to = group.distributedCount + limit;
 
         for (uint256 i = group.distributedCount; i < to; i++) {
-            sendGold(group.addresses[i], group.bets[i]);
-            emit TradeReturned(poolId, group.addresses[i], group.bets[i]);
+            bool success = sendGold(group.addresses[i], group.bets[i]);
+            if (success) emit TradeReturned(poolId, group.addresses[i], group.bets[i]);
         }
 
         group.distributedCount = to;
@@ -236,8 +234,10 @@ contract UpVsDownGameV2 is Ownable {
 
         for (uint256 i = winners.distributedCount; i < to; i++) {
             uint256 winnings = ((winners.bets[i] * 100 / winners.total) * dist.totalMinusFee / 100);
-            sendGold(winners.addresses[i], winnings + winners.bets[i]);
-            emit TradeWinningsSent(poolId, winners.addresses[i], winners.bets[i], winnings, winners.addresses[i]);
+            bool success = sendGold(winners.addresses[i], winnings + winners.bets[i]);
+            if (success) {
+                emit TradeWinningsSent(poolId, winners.addresses[i], winners.bets[i], winnings, winners.addresses[i]);
+            }
             winners.totalDistributed = winners.totalDistributed + winnings;
         }
 
@@ -245,11 +245,8 @@ contract UpVsDownGameV2 is Ownable {
 
         winners.distributedCount = to;
         if (winners.distributedCount == winners.bets.length) {
+            sendGold(gameController, dist.fee + dist.totalMinusFee - winners.totalDistributed);
             clearPool(poolId);
-            uint256 fee = dist.fee + dist.totalMinusFee - winners.totalDistributed;
-            uint256 feeForDistributor = fee * feePercentageForDistributor / 10_000;
-            sendGold(gameController, feeForDistributor);
-            gold.burn(address(this), fee - feeForDistributor);
         }
     }
 
@@ -258,7 +255,7 @@ contract UpVsDownGameV2 is Ownable {
         view
         returns (Distribution memory)
     {
-        uint256 fee = feePercentage * losers.total / 100 / 100;
+        uint256 fee = feePercentage * losers.total / 100;
         uint256 pending = winners.bets.length - winners.distributedCount;
         return Distribution({ fee: fee, totalMinusFee: losers.total - fee, pending: pending });
     }
@@ -295,6 +292,7 @@ contract UpVsDownGameV2 is Ownable {
         string avatarUrl;
         string countryCode;
         bool upOrDown;
+        uint256 goldBet;
     }
 
     function makeTrade(makeTradeStruct calldata userTrade)
@@ -304,9 +302,14 @@ contract UpVsDownGameV2 is Ownable {
         onlyGameRunning
         onlyPoolExists(userTrade.poolId)
     {
-        require(msg.value > 0, "Needs to send Matic to trade");
-        require(msg.value >= pools[userTrade.poolId].minBetAmount, "Trade amount should be higher than the minimum");
-        require(msg.value <= pools[userTrade.poolId].maxBetAmount, "Trade amount should be lower than the maximum");
+        gold.privilegedTransferFrom(msg.sender, address(this), userTrade.goldBet);
+        require(userTrade.goldBet > 0, "Needs to send Gold to trade");
+        require(
+            userTrade.goldBet >= pools[userTrade.poolId].minBetAmount, "Trade amount should be higher than the minimum"
+        );
+        require(
+            userTrade.goldBet <= pools[userTrade.poolId].maxBetAmount, "Trade amount should be lower than the maximum"
+        );
         uint256 newTotal;
 
         if (userTrade.upOrDown) {
@@ -314,14 +317,17 @@ contract UpVsDownGameV2 is Ownable {
                 pools[userTrade.poolId].upBetGroup.bets.length <= pools[userTrade.poolId].poolBetsLimit - 1,
                 "Pool is full, wait for next round"
             );
-            newTotal = addBet(pools[userTrade.poolId].upBetGroup, msg.value, userTrade.avatarUrl, userTrade.countryCode);
+            newTotal = addBet(
+                pools[userTrade.poolId].upBetGroup, userTrade.goldBet, userTrade.avatarUrl, userTrade.countryCode
+            );
         } else {
             require(
                 pools[userTrade.poolId].downBetGroup.bets.length <= pools[userTrade.poolId].poolBetsLimit - 1,
                 "Pool is full, wait for next round"
             );
-            newTotal =
-                addBet(pools[userTrade.poolId].downBetGroup, msg.value, userTrade.avatarUrl, userTrade.countryCode);
+            newTotal = addBet(
+                pools[userTrade.poolId].downBetGroup, userTrade.goldBet, userTrade.avatarUrl, userTrade.countryCode
+            );
         }
 
         string memory avatar;
@@ -342,7 +348,7 @@ contract UpVsDownGameV2 is Ownable {
         emit TradePlaced(
             userTrade.poolId,
             msg.sender,
-            msg.value,
+            userTrade.goldBet,
             (userTrade.upOrDown) ? "UP" : "DOWN",
             newTotal,
             userTrade.poolId,
@@ -353,7 +359,17 @@ contract UpVsDownGameV2 is Ownable {
         );
     }
 
-    function sendGold(address to, uint256 amount) private {
-        gold.transfer(to, amount);
+    function claimLostGold() external {
+        uint256 amount = lostGold[msg.sender];
+        lostGold[msg.sender] = 0;
+        sendGold(msg.sender, amount);
+    }
+
+    function sendGold(address to, uint256 amount) private returns (bool success) {
+        try gold.transfer(to, amount) {
+            success = true;
+        } catch {
+            lostGold[to] += amount;
+        }
     }
 }

@@ -8,5 +8,5 @@ interface IItem is IONFT1155 {
     function mint(address to, uint256 id) external;
     function burnBatch(address from, uint256[] memory ids, uint256[] memory amounts) external;
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts) external;
-    function marketplaceSafeTransferFrom(address from_, address to_, uint256 id_) external;
+    function privilegedSafeTransferFrom(address from_, address to_, uint256 id_) external;
 }

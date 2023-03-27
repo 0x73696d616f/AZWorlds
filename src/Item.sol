@@ -39,7 +39,7 @@ contract Item is IItem, ONFT1155 {
         _mintBatch(to, ids, amounts, "");
     }
 
-    function marketplaceSafeTransferFrom(address from_, address to_, uint256 id_) external override {
+    function privilegedSafeTransferFrom(address from_, address to_, uint256 id_) external override {
         _validateSender();
         _safeTransferFrom(from_, to_, id_, 1, "");
     }

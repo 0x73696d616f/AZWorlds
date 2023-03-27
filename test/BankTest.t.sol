@@ -19,17 +19,13 @@ contract BankTest is Fixture {
         uint256 amount_ = IERC20(_usdc).balanceOf(_bank);
         _invest(amount_);
         assertEq(IBank(_bank).previewRewards(), 0);
-        assertEq(IBank(_bank).claimRewards(), 0);
         vm.warp(365 days + 1);
-        assertEq(IBank(_bank).previewRewards(), amount_ * 5 / 100);
-        assertEq(IBank(_bank).claimRewards(), amount_ * 5 / 100);
-        assertEq(IBank(_bank).totalAssets(), amount_ * 105 / 100);
+        assertEq(IBank(_bank).totalAssets() + IBank(_bank).previewRewards(), amount_ * 105 / 100);
 
         vm.prank(_military);
         IBank(_bank).withdraw(amount_ * 105 / 100 - 1, _military, _military); //rounds down
 
         assertEq(IBank(_bank).previewRewards(), 0);
-        assertEq(IBank(_bank).claimRewards(), 0);
         assertEq(IBank(_bank).totalAssets(), 1);
 
         vm.prank(_military);
@@ -47,7 +43,6 @@ contract BankTest is Fixture {
         assertEq(IERC20(_usdc).balanceOf(_military), (amount_ * 105 / 100 - 1) * 105 / 100);
 
         assertEq(IBank(_bank).previewRewards(), 0);
-        assertEq(IBank(_bank).claimRewards(), 0);
         assertEq(IBank(_bank).totalAssets(), 2);
     }
 

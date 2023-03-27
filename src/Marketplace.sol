@@ -65,7 +65,7 @@ contract Marketplace is IMarketplace {
             if (buyOrder_.buyer == address(0)) revert BuyOrderDoesNotExistError(buyOrderIds_[i_]);
             delete _buyOrders[buyOrderIds_[i_]];
             totalGoldInBuyOrders_ += buyOrder_.price;
-            _item.marketplaceSafeTransferFrom(msg.sender, buyOrder_.buyer, buyOrder_.itemId);
+            _item.privilegedSafeTransferFrom(msg.sender, buyOrder_.buyer, buyOrder_.itemId);
             unchecked {
                 ++i_;
             }

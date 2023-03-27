@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import { Test } from "@forge-std/Test.sol";
 import { console } from "@forge-std/console.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { MockERC20 } from "test/mocks/MockERC20.sol";
+import { MockPriceFeed } from "test/mocks/MockPriceFeed.sol";
 import { TimelockController } from "@openzeppelin/contracts/governance/TimelockController.sol";
 import { AZWorldsGovernor } from "src/AZWorldsGovernor.sol";
 import { CharacterSale } from "src/CharacterSale.sol";
@@ -15,7 +17,9 @@ import { Military } from "src/Military.sol";
 import { MockInvestmentProtocol } from "test/mocks/MockInvestmentProtocol.sol";
 import { MockInvestmentStrategy } from "test/mocks/MockInvestmentStrategy.sol";
 import { MockSwapRouter } from "test/mocks/MockSwapRouter.sol";
+import { UpVsDownGameV2 } from "src/UpVsDownGameV2.sol";
 
+import { IPriceFeed } from "src/interfaces/IPriceFeed.sol";
 import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 contract Fixture is Test {
@@ -32,6 +36,7 @@ contract Fixture is Test {
     address internal _investmentProtocol;
     address internal _investmentStrategy;
     address internal _governor;
+    address internal _game;
 
     address internal immutable _deployer;
     uint256 internal immutable _player1PK;
@@ -40,6 +45,9 @@ contract Fixture is Test {
     address internal constant _layerZeroEndpoint = 0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1;
     address internal constant _link = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
     address internal constant _vrf2Wrapper = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
+    address internal _priceFeed;
+    address internal constant WBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
+    address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
     uint8 internal constant _nrChains = 3;
     uint8 internal constant _chainId = 1;
@@ -73,11 +81,12 @@ contract Fixture is Test {
         _marketplace = computeCreateAddress(_deployer, nonce_ + 3);
         _boss = computeCreateAddress(_deployer, nonce_ + 4);
         _military = computeCreateAddress(_deployer, nonce_ + 5);
-        _governor = computeCreateAddress(_deployer, nonce_ + 6);
+        _governor = computeCreateAddress(_deployer, nonce_ + 6); //timelock
+        _game = computeCreateAddress(_deployer, nonce_ + 11);
 
-        new Bank(_character, _marketplace, _military, _layerZeroEndpoint, MockERC20(_usdc));
+        new Bank(_character, _marketplace, _military, _layerZeroEndpoint, MockERC20(_usdc), _game);
         _character = address(
-            new CharacterSale(Bank(_bank), Item(_item), _military, _boss, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains, _deployer, _gameControllerFeePercentage)
+            new CharacterSale(Bank(_bank), Item(_item), _military, _boss, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains, _gameControllerFeePercentage)
         );
         new Item(_character, _marketplace, _boss, _layerZeroEndpoint);
         new Marketplace(Item(_item), Bank(_bank));
@@ -89,7 +98,6 @@ contract Fixture is Test {
         TimelockController timelock_ = new TimelockController(10 minutes, new address[](0), executors, _deployer);
         AZWorldsGovernor governor_ = new AZWorldsGovernor(CharacterSale(_character), timelock_);
         timelock_.grantRole(timelock_.PROPOSER_ROLE(), address(governor_));
-        _governor = address(timelock_);
 
         _investmentProtocol = address(new MockInvestmentProtocol(MockERC20(_usdc), MockERC20(_rewardToken)));
         _investmentStrategy = address(
@@ -97,6 +105,9 @@ contract Fixture is Test {
         );
 
         Bank(_bank).setInvestmentStrategy(MockInvestmentStrategy(_investmentStrategy));
+
+        _priceFeed = address(new MockPriceFeed());
+        new UpVsDownGameV2(Bank(_bank), IPriceFeed(_priceFeed), IERC20(WBTC), IERC20(USDC));
 
         vm.label(_bank, "bank");
         vm.label(_character, "character");
@@ -113,6 +124,10 @@ contract Fixture is Test {
         vm.label(_swapRouter, "swapRouter");
         vm.label(_usdc, "usdc");
         vm.label(_rewardToken, "rewardToken");
+        vm.label(_priceFeed, "priceFeed");
+        vm.label(WBTC, "wbtc");
+        vm.label(USDC, "usdc");
+        vm.label(_game, "game");
 
         vm.stopPrank();
 

@@ -5,16 +5,20 @@ import { OFT } from "./dependencies/layerZero/oft/OFT.sol";
 import { IGold } from "./interfaces/IGold.sol";
 
 contract Gold is OFT, IGold {
-    address public immutable _character;
-    address public immutable _marketplace;
+    address public immutable character;
+    address public immutable marketplace;
+    address public immutable game;
 
-    constructor(address character_, address marketPlace_, address lzEndpoint_) OFT("Gold", "GOLD", lzEndpoint_) {
-        _character = character_;
-        _marketplace = marketPlace_;
+    constructor(address character_, address marketPlace_, address lzEndpoint_, address game_)
+        OFT("Gold", "GOLD", lzEndpoint_)
+    {
+        character = character_;
+        marketplace = marketPlace_;
+        game = game_;
     }
 
     function privilegedTransferFrom(address from_, address to_, uint256 amount_) external override {
-        _onlyCharacterOrMarketplace();
+        _validateSender();
         _transfer(from_, to_, amount_);
     }
 
@@ -27,15 +31,13 @@ contract Gold is OFT, IGold {
         _mint(account_, amount_);
     }
 
-    function _onlyCharacterOrMarketplace() internal view {
-        if (msg.sender != _character && msg.sender != _marketplace) revert NotCharacterNorMarketPlaceError(msg.sender);
+    function _validateSender() internal view {
+        if (msg.sender != character && msg.sender != marketplace && msg.sender != game) {
+            revert NotPrivilegedSender(msg.sender);
+        }
     }
 
     function _onlyCharacter() internal view {
-        if (msg.sender != _character) revert NotCharacterError(msg.sender);
-    }
-
-    function _onlyMartketplace() internal view {
-        if (msg.sender != _marketplace) revert NotMarketplaceError(msg.sender);
+        if (msg.sender != character) revert NotCharacterError(msg.sender);
     }
 }

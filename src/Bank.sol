@@ -17,10 +17,14 @@ contract Bank is IBank, ERC4626, Gold {
 
     IInvestmentStrategy public investmentStrategy;
 
-    constructor(address character_, address marketplace_, address military_, address lzEndpoint_, IERC20 asset_)
-        Gold(character_, marketplace_, lzEndpoint_)
-        ERC4626(asset_)
-    {
+    constructor(
+        address character_,
+        address marketplace_,
+        address military_,
+        address lzEndpoint_,
+        IERC20 asset_,
+        address game_
+    ) Gold(character_, marketplace_, lzEndpoint_, game_) ERC4626(asset_) {
         military = military_;
     }
 
@@ -42,7 +46,7 @@ contract Bank is IBank, ERC4626, Gold {
         investmentStrategy.withdraw(amount_);
     }
 
-    function claimRewards() public override returns (uint256 rewards_) {
+    function _claimRewards() internal returns (uint256 rewards_) {
         rewards_ = investmentStrategy.claimRewards();
         if (rewards_ > 0) totalUsdc += rewards_;
     }
@@ -69,7 +73,7 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 shares_)
     {
-        claimRewards();
+        _claimRewards();
         shares_ = super.deposit(assets, receiver);
         totalUsdc += assets;
     }
@@ -80,7 +84,7 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 assets_)
     {
-        claimRewards();
+        _claimRewards();
         assets_ = super.mint(shares, receiver);
         totalUsdc += assets_;
     }
@@ -91,7 +95,7 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 shares_)
     {
-        claimRewards();
+        _claimRewards();
         _withdrawInvestmentToAllowWithdrawal(assets);
         shares_ = super.withdraw(assets, receiver, owner);
         totalUsdc -= assets;
@@ -103,9 +107,9 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 assets_)
     {
-        claimRewards();
+        _claimRewards();
         require(shares <= maxRedeem(owner), "ERC4626: redeem more than max");
-        uint256 assets_ = previewRedeem(shares);
+        assets_ = previewRedeem(shares);
         _withdrawInvestmentToAllowWithdrawal(assets_);
         super.redeem(shares, receiver, owner);
         totalUsdc -= assets_;

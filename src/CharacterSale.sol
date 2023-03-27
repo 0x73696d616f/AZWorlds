@@ -11,9 +11,9 @@ import { LinearVRGDA } from "src/dependencies/linearVRGDA/LinearVRGDA.sol";
 import { Character } from "./Character.sol";
 
 contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
-    address public immutable _usdc;
-    uint256 public immutable _chainId;
-    uint256 public immutable _nrChains;
+    address public immutable usdc;
+    uint256 public immutable chainId;
+    uint256 public immutable nrChains;
 
     uint256 public totalSold; // The total number of tokens sold so far.
     uint256 public immutable startTime = block.timestamp; // When VRGDA sales begun.
@@ -29,7 +29,6 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
         address usdc_,
         uint8 chainId_,
         uint8 nrChains_,
-        address gameController_,
         uint8 gameControllerFeePercentage_
     )
         Character(bank_, item_, lzEndpoint_, military_, boss_)
@@ -39,11 +38,11 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
             10e18 // Per time unit.
         )
     {
-        _usdc = usdc_;
-        IUSDC(_usdc).approve(address(bank_), type(uint256).max);
-        _chainId = chainId_;
-        _nrChains = nrChains_;
-        gameController = gameController_;
+        usdc = usdc_;
+        IUSDC(usdc).approve(address(bank_), type(uint256).max);
+        chainId = chainId_;
+        nrChains = nrChains_;
+        gameController = msg.sender;
         gameControllerFeePercentage = gameControllerFeePercentage_;
     }
 
@@ -56,12 +55,12 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
         Signature calldata signature_
     ) external override returns (uint256 mintedId_) {
         unchecked {
-            mintedId_ = _chainId + _nrChains * totalSold;
+            mintedId_ = chainId + nrChains * totalSold;
             uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startTime), totalSold++);
 
             require(usdcSent_ >= price, "UNDERPAID"); // Don't allow underpaying.
 
-            IUSDC(_usdc).transferWithAuthorization(
+            IUSDC(usdc).transferWithAuthorization(
                 from_,
                 address(this),
                 usdcSent_,
@@ -74,7 +73,7 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
             );
 
             _mint(from_, mintedId_); // Mint the NFT using mintedId.
-            if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(from_, usdcSent_ - price);
+            if (usdcSent_ - price > 0) IUSDC(usdc).transfer(from_, usdcSent_ - price);
             sendUsdcToBankAndGameController();
         }
     }
@@ -88,10 +87,10 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
     }
 
     function sendUsdcToBankAndGameController() public override {
-        uint256 totalBalance_ = IUSDC(_usdc).balanceOf(address(this));
+        uint256 totalBalance_ = IUSDC(usdc).balanceOf(address(this));
         uint256 gameControllerFee_ = totalBalance_ * gameControllerFeePercentage / 100;
-        _bank.depositAndSendToMilitary(totalBalance_ - gameControllerFee_);
-        if (gameController != address(0)) IUSDC(_usdc).transfer(gameController, gameControllerFee_);
+        bank.depositAndSendToMilitary(totalBalance_ - gameControllerFee_);
+        if (gameController != address(0)) IUSDC(usdc).transfer(gameController, gameControllerFee_);
     }
 
     function getPrice() external view override returns (uint256 price_) {

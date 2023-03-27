@@ -38,7 +38,6 @@ contract MilitaryTest is Fixture {
     }
 
     function testJoinMilitary_noPowerBurnsAll() public {
-        uint256 initialBalance_ = IGold(_bank).balanceOf(_military);
         vm.warp(365 days + 1);
         vm.prank(_player1);
         IMilitary(_military).join(_player1CharId);
