@@ -7,7 +7,8 @@ contract MockInvestmentProtocol {
     mapping(address => uint256) public totalStaked;
     MockERC20 public rewardToken;
     MockERC20 public stakedToken;
-    mapping(address => uint256) public lastRewardClaimed;
+    mapping(address => uint256) public lastUpdate;
+    mapping(address => uint256) public pendingRewards;
     uint256 public APY = 5;
 
     constructor(MockERC20 stakedToken_, MockERC20 rewardToken_) {
@@ -15,29 +16,36 @@ contract MockInvestmentProtocol {
         stakedToken = stakedToken_;
     }
 
-    function stake(uint256 amount_) external returns (uint256 rewards_) {
-        rewards_ = claimRewards();
+    function stake(uint256 amount_) external {
         stakedToken.transferFrom(msg.sender, address(this), amount_);
+        updatePendingRewards();
         totalStaked[msg.sender] += amount_;
     }
 
     function claimRewards() public returns (uint256 rewards_) {
         rewards_ = previewRewards();
-        lastRewardClaimed[msg.sender] = block.timestamp;
+        lastUpdate[msg.sender] = block.timestamp;
         if (rewards_ != 0) MockERC20(rewardToken).mint(msg.sender, rewards_);
+        delete pendingRewards[msg.sender];
     }
 
     function previewRewards() public view returns (uint256) {
-        return totalStaked[msg.sender] * (block.timestamp - lastRewardClaimed[msg.sender]) * APY / 100 / 365 days;
+        return totalStaked[msg.sender] * (block.timestamp - lastUpdate[msg.sender]) * APY / 100 / 365 days
+            + pendingRewards[msg.sender];
     }
 
-    function withdraw(uint256 amount_) external returns (uint256 rewards_) {
-        rewards_ = claimRewards();
+    function withdraw(uint256 amount_) external {
+        updatePendingRewards();
         totalStaked[msg.sender] -= amount_;
         stakedToken.transfer(msg.sender, amount_);
     }
 
     function getTotalStaked() external view returns (uint256) {
         return totalStaked[msg.sender];
+    }
+
+    function updatePendingRewards() internal {
+        pendingRewards[msg.sender] = previewRewards();
+        lastUpdate[msg.sender] = block.timestamp;
     }
 }

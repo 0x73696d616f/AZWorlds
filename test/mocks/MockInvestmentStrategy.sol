@@ -28,21 +28,21 @@ contract MockInvestmentStrategy is InvestmentStrategy {
         bankAsset.approve(address(protocol), type(uint256).max);
     }
 
-    function invest(uint256 amount_) external override onlyBank returns (uint256) {
-        return protocol.stake(amount_);
+    function invest(uint256 amount_) external override onlyBank {
+        protocol.stake(amount_);
     }
 
-    function claimRewards() external override onlyBank returns (uint256 rewards_) {
-        protocol.claimRewards();
-        rewards_ = _swapRewardTokensForBankAssetAndSendToBank();
+    function claimRewards() external override onlyBank returns (uint256 rewardsInAsset_) {
+        uint256 rewards_ = protocol.claimRewards();
+        if (rewards_ != 0) rewardsInAsset_ = _swapRewardTokensForBankAssetAndSendToBank();
     }
 
-    function previewRewards() external view override returns (uint256 rewards_) {
-        rewards_ = protocol.previewRewards();
+    function previewRewards() external view override returns (uint256) {
+        return protocol.previewRewards();
     }
 
-    function withdraw(uint256 amount_) external override onlyBank returns (uint256 rewards_) {
-        rewards_ = protocol.withdraw(amount_);
+    function withdraw(uint256 amount_) external override onlyBank {
+        protocol.withdraw(amount_);
         bankAsset.transfer(address(bank), amount_);
     }
 

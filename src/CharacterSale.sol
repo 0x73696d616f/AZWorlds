@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { toDaysWadUnsafe } from "src/dependencies/linearVRGDA/utils/SignedWadMath.sol";
 import { IUSDC } from "./interfaces/IUSDC.sol";
 import { IItem } from "./interfaces/IItem.sol";
@@ -9,13 +10,15 @@ import { ICharacterSale } from "./interfaces/ICharacterSale.sol";
 import { LinearVRGDA } from "src/dependencies/linearVRGDA/LinearVRGDA.sol";
 import { Character } from "./Character.sol";
 
-contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
+contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
     address public immutable _usdc;
     uint256 public immutable _chainId;
     uint256 public immutable _nrChains;
 
     uint256 public totalSold; // The total number of tokens sold so far.
     uint256 public immutable startTime = block.timestamp; // When VRGDA sales begun.
+    address public gameController;
+    uint256 public gameControllerFeePercentage;
 
     constructor(
         IBank bank_,
@@ -25,7 +28,9 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
         address lzEndpoint_,
         address usdc_,
         uint8 chainId_,
-        uint8 nrChains_
+        uint8 nrChains_,
+        address gameController_,
+        uint8 gameControllerFeePercentage_
     )
         Character(bank_, item_, lzEndpoint_, military_, boss_)
         LinearVRGDA(
@@ -38,6 +43,8 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
         IUSDC(_usdc).approve(address(bank_), type(uint256).max);
         _chainId = chainId_;
         _nrChains = nrChains_;
+        gameController = gameController_;
+        gameControllerFeePercentage = gameControllerFeePercentage_;
     }
 
     function buy(
@@ -67,10 +74,24 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
             );
 
             _mint(from_, mintedId_); // Mint the NFT using mintedId.
-
-            _bank.depositAndNotify(price, _military, abi.encodeWithSignature("deposit(uint256)", price));
             if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(from_, usdcSent_ - price);
+            sendUsdcToBankAndGameController();
         }
+    }
+
+    function changeGameController(address gameController_) external override onlyOwner {
+        gameController = gameController_;
+    }
+
+    function changeGameControllerFeePercentage(uint256 gameControllerFeePercentage_) external override onlyOwner {
+        gameControllerFeePercentage = gameControllerFeePercentage_;
+    }
+
+    function sendUsdcToBankAndGameController() public override {
+        uint256 totalBalance_ = IUSDC(_usdc).balanceOf(address(this));
+        uint256 gameControllerFee_ = totalBalance_ * gameControllerFeePercentage / 100;
+        _bank.depositAndSendToMilitary(totalBalance_ - gameControllerFee_);
+        if (gameController != address(0)) IUSDC(_usdc).transfer(gameController, gameControllerFee_);
     }
 
     function getPrice() external view override returns (uint256 price_) {

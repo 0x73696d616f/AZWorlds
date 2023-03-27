@@ -19,6 +19,7 @@ contract MockSwapRouter {
     /// @param params The parameters necessary for the swap, encoded as `ExactInputSingleParams` in calldata
     /// @return amountOut The amount of the received token
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
+        MockERC20(params.tokenIn).transferFrom(msg.sender, address(this), params.amountIn);
         MockERC20(params.tokenOut).mint(params.recipient, params.amountIn);
         return params.amountIn;
     }

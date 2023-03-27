@@ -16,13 +16,13 @@ abstract contract InvestmentStrategy is IInvestmentStrategy {
         bank = bank_;
     }
 
-    function invest(uint256 amount_) external virtual override onlyBank returns (uint256) { }
+    function invest(uint256 amount_) external virtual override onlyBank { }
 
     function claimRewards() external virtual override onlyBank returns (uint256) { }
 
     function previewRewards() external view virtual override returns (uint256) { }
 
-    function withdraw(uint256 amount_) external virtual override onlyBank returns (uint256) { }
+    function withdraw(uint256 amount_) external virtual override onlyBank { }
 
     function getTotalStaked() external view virtual override returns (uint256) { }
 

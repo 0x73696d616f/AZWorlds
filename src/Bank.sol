@@ -6,26 +6,27 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { IERC4626 } from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IInvestmentStrategy } from "src/interfaces/IInvestmentStrategy.sol";
 import { IBank } from "src/interfaces/IBank.sol";
+import { IMilitary } from "src/interfaces/IMilitary.sol";
 import { Gold } from "src/Gold.sol";
 
 contract Bank is IBank, ERC4626, Gold {
     uint256 public totalUsdc;
-
-    using Address for address;
+    address public military;
 
     IInvestmentStrategy public investmentStrategy;
 
-    constructor(address character_, address marketplace_, address lzEndpoint_, IERC20 asset_)
+    constructor(address character_, address marketplace_, address military_, address lzEndpoint_, IERC20 asset_)
         Gold(character_, marketplace_, lzEndpoint_)
         ERC4626(asset_)
-    { }
+    {
+        military = military_;
+    }
 
-    function depositAndNotify(uint256 amount_, address to_, bytes calldata data) external override {
-        deposit(amount_, to_);
-        to_.functionCall(data);
+    function depositAndSendToMilitary(uint256 assets_) external override {
+        uint256 shares_ = deposit(assets_, military);
+        IMilitary(military).deposit(shares_);
     }
 
     function decimals() public pure override(ERC20, ERC4626, IERC20Metadata) returns (uint8) {
@@ -34,17 +35,16 @@ contract Bank is IBank, ERC4626, Gold {
 
     function invest(uint256 amount_) public override onlyOwner {
         IERC20(asset()).transfer(address(investmentStrategy), amount_);
-        totalUsdc += investmentStrategy.invest(amount_);
+        investmentStrategy.invest(amount_);
     }
 
-    function withdrawInvestment(uint256 amount_) external override onlyOwner returns (uint256 rewards_) {
-        rewards_ = investmentStrategy.withdraw(amount_);
-        totalUsdc += rewards_;
+    function withdrawInvestment(uint256 amount_) external override onlyOwner {
+        investmentStrategy.withdraw(amount_);
     }
 
-    function claimRewards() external override returns (uint256 rewards_) {
+    function claimRewards() public override returns (uint256 rewards_) {
         rewards_ = investmentStrategy.claimRewards();
-        totalUsdc += rewards_;
+        if (rewards_ > 0) totalUsdc += rewards_;
     }
 
     function setInvestmentStrategy(IInvestmentStrategy strategy_) external override onlyOwner {
@@ -69,6 +69,7 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 shares_)
     {
+        claimRewards();
         shares_ = super.deposit(assets, receiver);
         totalUsdc += assets;
     }
@@ -79,6 +80,7 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 assets_)
     {
+        claimRewards();
         assets_ = super.mint(shares, receiver);
         totalUsdc += assets_;
     }
@@ -89,6 +91,8 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 shares_)
     {
+        claimRewards();
+        _withdrawInvestmentToAllowWithdrawal(assets);
         shares_ = super.withdraw(assets, receiver, owner);
         totalUsdc -= assets;
     }
@@ -99,7 +103,16 @@ contract Bank is IBank, ERC4626, Gold {
         override(ERC4626, IERC4626)
         returns (uint256 assets_)
     {
-        assets_ = super.redeem(shares, receiver, owner);
+        claimRewards();
+        require(shares <= maxRedeem(owner), "ERC4626: redeem more than max");
+        uint256 assets_ = previewRedeem(shares);
+        _withdrawInvestmentToAllowWithdrawal(assets_);
+        super.redeem(shares, receiver, owner);
         totalUsdc -= assets_;
+    }
+
+    function _withdrawInvestmentToAllowWithdrawal(uint256 assets_) internal {
+        uint256 notInvestedAssets_ = IERC20(asset()).balanceOf(address(this));
+        if (assets_ > notInvestedAssets_) investmentStrategy.withdraw(assets_ - notInvestedAssets_);
     }
 }

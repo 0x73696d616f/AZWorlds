@@ -14,24 +14,24 @@ contract BossTest is Fixture {
 
     function testAttack_ok() public {
         vm.prank(_player1);
-        Boss(_addrs.boss).attackBoss(_player1CharId);
-        vm.warp(_cts.bossRoundDuration);
+        Boss(_boss).attackBoss(_player1CharId);
+        vm.warp(_bossRoundDuration);
         vm.prank(_player1);
-        Boss(_addrs.boss).attackBoss(_player1CharId);
-        vm.prank(_addrsExt.vrf2Wrapper);
+        Boss(_boss).attackBoss(_player1CharId);
+        vm.prank(_vrf2Wrapper);
         uint256[] memory itemId_ = new uint256[](1);
         itemId_[0] = type(uint256).max / 2;
-        IBoss(_addrs.boss).rawFulfillRandomWords(0, itemId_);
+        IBoss(_boss).rawFulfillRandomWords(0, itemId_);
         vm.prank(_player1);
-        uint256 receivedItemId_ = Boss(_addrs.boss).claimRewards(_player1CharId, 0);
-        assertEq(IItem(_addrs.item).balanceOf(_player1, receivedItemId_), 1);
+        uint256 receivedItemId_ = Boss(_boss).claimRewards(_player1CharId, 0);
+        assertEq(IItem(_item).balanceOf(_player1, receivedItemId_), 1);
     }
 
     function testAttack_RoundNotOver() public {
         vm.startPrank(_player1);
-        Boss(_addrs.boss).attackBoss(_player1CharId);
+        Boss(_boss).attackBoss(_player1CharId);
         vm.expectRevert(abi.encodeWithSelector(IBoss.RoundNotOverError.selector, 0));
-        Boss(_addrs.boss).claimRewards(_player1CharId, 0);
+        Boss(_boss).claimRewards(_player1CharId, 0);
         vm.stopPrank();
     }
 }

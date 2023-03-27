@@ -8,11 +8,11 @@ import { IGold } from "./IGold.sol";
 interface IBank is IERC4626, IGold {
     error NotGovernanceError(address sender_);
 
-    function depositAndNotify(uint256 amount_, address to_, bytes calldata data) external;
+    function depositAndSendToMilitary(uint256 assets_) external;
 
     function invest(uint256 amount_) external;
 
-    function withdrawInvestment(uint256 amount_) external returns (uint256);
+    function withdrawInvestment(uint256 amount_) external;
 
     function claimRewards() external returns (uint256);
 

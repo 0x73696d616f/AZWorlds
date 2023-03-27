@@ -16,36 +16,45 @@ contract BankTest is Fixture {
     }
 
     function testRewards() public {
-        uint256 amount_ = IERC20(_addrsExt.usdc).balanceOf(_addrs.bank);
+        uint256 amount_ = IERC20(_usdc).balanceOf(_bank);
         _invest(amount_);
-        assertEq(IBank(_addrs.bank).previewRewards(), 0);
-        assertEq(IBank(_addrs.bank).claimRewards(), 0);
+        assertEq(IBank(_bank).previewRewards(), 0);
+        assertEq(IBank(_bank).claimRewards(), 0);
         vm.warp(365 days + 1);
-        assertEq(IBank(_addrs.bank).previewRewards(), amount_ * 5 / 100);
-        assertEq(IBank(_addrs.bank).claimRewards(), amount_ * 5 / 100);
-        assertEq(IBank(_addrs.bank).totalAssets(), amount_ * 105 / 100);
+        assertEq(IBank(_bank).previewRewards(), amount_ * 5 / 100);
+        assertEq(IBank(_bank).claimRewards(), amount_ * 5 / 100);
+        assertEq(IBank(_bank).totalAssets(), amount_ * 105 / 100);
 
-        vm.prank(_addrs.military);
-        vm.expectRevert();
-        IBank(_addrs.bank).withdraw(amount_ * 5 / 100 + 1, _addrs.military, _addrs.military);
+        vm.prank(_military);
+        IBank(_bank).withdraw(amount_ * 105 / 100 - 1, _military, _military); //rounds down
 
-        // Can only withdraw rewards
-        vm.prank(_addrs.military);
-        IBank(_addrs.bank).withdraw(amount_ * 5 / 100, _addrs.military, _addrs.military);
+        assertEq(IBank(_bank).previewRewards(), 0);
+        assertEq(IBank(_bank).claimRewards(), 0);
+        assertEq(IBank(_bank).totalAssets(), 1);
 
-        // Remove investment
+        vm.prank(_military);
+        IERC20(_usdc).approve(_bank, type(uint256).max);
+        vm.prank(_military);
+        IBank(_bank).deposit(amount_ * 105 / 100 - 1, _military);
         vm.prank(_deployer);
-        IBank(_addrs.bank).withdrawInvestment(amount_);
+        IBank(_bank).invest(amount_ * 105 / 100 - 1);
 
-        // Now can withdraw everything
-        vm.prank(_addrs.military);
-        IBank(_addrs.bank).withdraw(amount_ - 1, _addrs.military, _addrs.military); //rounds down
+        vm.warp(2 * 365 days + 1);
+
+        uint256 militaryShares_ = IBank(_bank).balanceOf(_military);
+        vm.prank(_military);
+        IBank(_bank).redeem(militaryShares_, _military, _military);
+        assertEq(IERC20(_usdc).balanceOf(_military), (amount_ * 105 / 100 - 1) * 105 / 100);
+
+        assertEq(IBank(_bank).previewRewards(), 0);
+        assertEq(IBank(_bank).claimRewards(), 0);
+        assertEq(IBank(_bank).totalAssets(), 2);
     }
 
     function _invest(uint256 usdcAmount_) internal {
-        uint256 initialUsdcBalance_ = IERC20(_addrsExt.usdc).balanceOf(_addrs.investmentProtocol);
+        uint256 initialUsdcBalance_ = IERC20(_usdc).balanceOf(_investmentProtocol);
         vm.prank(_deployer);
-        IBank(_addrs.bank).invest(usdcAmount_);
-        assertEq(IERC20(_addrsExt.usdc).balanceOf(_addrs.investmentProtocol), initialUsdcBalance_ + usdcAmount_);
+        IBank(_bank).invest(usdcAmount_);
+        assertEq(IERC20(_usdc).balanceOf(_investmentProtocol), initialUsdcBalance_ + usdcAmount_);
     }
 }

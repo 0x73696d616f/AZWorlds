@@ -20,11 +20,11 @@ contract CharacterTest is Fixture {
             expectedPower_ += i_;
         }
         vm.prank(_player1);
-        ICharacter(_addrs.character).equipItems(_player1CharId, itemIds_);
-        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_addrs.character).getCharInfo(_player1CharId);
+        ICharacter(_character).equipItems(_player1CharId, itemIds_);
+        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_character).getCharInfo(_player1CharId);
         assertEq(charInfo_.power, expectedPower_);
         for (uint256 i_ = 0; i_ < 10; i_++) {
-            assertEq(IItem(_addrs.item).balanceOf(_player1, i_), 0);
+            assertEq(IItem(_item).balanceOf(_player1, i_), 0);
         }
     }
 
@@ -36,19 +36,19 @@ contract CharacterTest is Fixture {
         uint256 gold_ = 100;
         _carryGold(gold_);
         vm.prank(_player1);
-        ICharacter(_addrs.character).dropGold(_player1CharId, gold_);
-        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_addrs.character).getCharInfo(_player1CharId);
+        ICharacter(_character).dropGold(_player1CharId, gold_);
+        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_character).getCharInfo(_player1CharId);
         assertEq(charInfo_.equippedGold, 0);
-        assertEq(Bank(_addrs.bank).balanceOf(_player1), 100);
+        assertEq(Bank(_bank).balanceOf(_player1), 100);
     }
 
     function _carryGold(uint256 gold_) internal {
         _mintGold(_player1, gold_);
-        assertEq(Bank(_addrs.bank).balanceOf(_player1), gold_);
+        assertEq(Bank(_bank).balanceOf(_player1), gold_);
         vm.prank(_player1);
-        ICharacter(_addrs.character).carryGold(_player1CharId, gold_);
-        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_addrs.character).getCharInfo(_player1CharId);
+        ICharacter(_character).carryGold(_player1CharId, gold_);
+        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_character).getCharInfo(_player1CharId);
         assertEq(charInfo_.equippedGold, gold_);
-        assertEq(Bank(_addrs.bank).balanceOf(_player1), 0);
+        assertEq(Bank(_bank).balanceOf(_player1), 0);
     }
 }

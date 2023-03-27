@@ -30,6 +30,7 @@ contract Deploy is Script {
     uint256 private _bossRoundDuration;
     ISwapRouter private _swapRouter;
     uint24 private _poolFee;
+    uint8 private _characterFee;
 
     struct Addresses {
         address character;
@@ -54,6 +55,7 @@ contract Deploy is Script {
         _poolFee = 500;
         _usdc = MockERC20(0x1f4dA555cE2F67941D2F80231769AB1de252ce28);
         _rewardToken = MockERC20(0x67Cc0b08b6d91F8A46Bd04739DEeFc483D50B5dB);
+        _characterFee = 20;
     }
 
     /// @dev You can send multiple transactions inside a single script.
@@ -70,9 +72,9 @@ contract Deploy is Script {
         addresses_.military = computeCreateAddress(_deployerAddress, nonce_ + 5);
         address governorAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 6);
 
-        new Bank(addresses_.character, addresses_.marketplace, _layerZeroEndpoint, _usdc);
+        new Bank(addresses_.character, addresses_.marketplace, addresses_.military, _layerZeroEndpoint, _usdc);
         addresses_.character = address(
-            new CharacterSale(Bank(addresses_.bank ), Item(addresses_.item), addresses_.military, addresses_.boss, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains)
+            new CharacterSale(Bank(addresses_.bank ), Item(addresses_.item), addresses_.military, addresses_.boss, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains, _deployerAddress, _characterFee)
         );
         new Item(addresses_.character, addresses_.marketplace, addresses_.boss, _layerZeroEndpoint);
         new Marketplace(Item(addresses_.item), Bank(addresses_.bank));

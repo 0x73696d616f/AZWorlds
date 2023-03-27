@@ -17,4 +17,6 @@ interface IUSDC {
     function transfer(address to_, uint256 value_) external;
 
     function approve(address spender_, uint256 value_) external;
+
+    function balanceOf(address account_) external view returns (uint256);
 }

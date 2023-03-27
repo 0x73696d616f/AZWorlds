@@ -39,37 +39,37 @@ contract MarketplaceTest is Fixture {
         IMarketplace.BuyOrder[] memory buyOrders_ = new IMarketplace.BuyOrder[](1);
         buyOrders_[0] = buyOrder_;
 
-        IMarketplace(_addrs.marketplace).placeOrders(sellOrders_, buyOrders_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].seller, _player1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].itemId, player1ItemId_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].price, sellOrderPrice_);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].buyer, _player1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].itemId, player1ItemId_ + 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].price, buyOrderPrice_);
+        IMarketplace(_marketplace).placeOrders(sellOrders_, buyOrders_);
+        assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, _player1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].itemId, player1ItemId_);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].price, sellOrderPrice_);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].buyer, _player1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].itemId, player1ItemId_ + 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].price, buyOrderPrice_);
 
         uint256[] memory buyOrderIds_ = new uint256[](1);
         buyOrderIds_[0] = 0;
         uint256[] memory sellOrderIds_ = new uint256[](1);
         sellOrderIds_[0] = 0;
         vm.prank(player2_);
-        IMarketplace(_addrs.marketplace).fullfilOrders(sellOrderIds_, buyOrderIds_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].seller, address(0));
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].itemId, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].price, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].buyer, address(0));
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].itemId, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].price, 0);
+        IMarketplace(_marketplace).fullfilOrders(sellOrderIds_, buyOrderIds_);
+        assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, address(0));
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].itemId, 0);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].price, 0);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].buyer, address(0));
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].itemId, 0);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].price, 0);
 
-        assertEq(IItem(_addrs.item).balanceOf(_player1, player1ItemId_), 0);
-        assertEq(IItem(_addrs.item).balanceOf(_player1, player2ItemId_), 1);
-        assertEq(IItem(_addrs.item).balanceOf(player2_, player1ItemId_), 1);
-        assertEq(IItem(_addrs.item).balanceOf(player2_, player2ItemId_), 0);
-        assertEq(Bank(_addrs.bank).balanceOf(_player1), player1Gold_ - buyOrderPrice_ + sellOrderPrice_);
-        assertEq(Bank(_addrs.bank).balanceOf(player2_), player2Gold_ - sellOrderPrice_ + buyOrderPrice_);
+        assertEq(IItem(_item).balanceOf(_player1, player1ItemId_), 0);
+        assertEq(IItem(_item).balanceOf(_player1, player2ItemId_), 1);
+        assertEq(IItem(_item).balanceOf(player2_, player1ItemId_), 1);
+        assertEq(IItem(_item).balanceOf(player2_, player2ItemId_), 0);
+        assertEq(Bank(_bank).balanceOf(_player1), player1Gold_ - buyOrderPrice_ + sellOrderPrice_);
+        assertEq(Bank(_bank).balanceOf(player2_), player2Gold_ - sellOrderPrice_ + buyOrderPrice_);
     }
 
     function testCancelOrders() public {
@@ -99,29 +99,29 @@ contract MarketplaceTest is Fixture {
         IMarketplace.BuyOrder[] memory buyOrders_ = new IMarketplace.BuyOrder[](1);
         buyOrders_[0] = buyOrder_;
 
-        IMarketplace(_addrs.marketplace).placeOrders(sellOrders_, buyOrders_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].seller, _player1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].itemId, player1ItemId_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].price, sellOrderPrice_);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].buyer, _player1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].itemId, player1ItemId_ + 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].price, buyOrderPrice_);
+        IMarketplace(_marketplace).placeOrders(sellOrders_, buyOrders_);
+        assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, _player1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].itemId, player1ItemId_);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].price, sellOrderPrice_);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].buyer, _player1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].itemId, player1ItemId_ + 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].price, buyOrderPrice_);
 
         uint256[] memory buyOrderIds_ = new uint256[](1);
         buyOrderIds_[0] = 0;
         uint256[] memory sellOrderIds_ = new uint256[](1);
         sellOrderIds_[0] = 0;
         vm.prank(_player1);
-        IMarketplace(_addrs.marketplace).cancelOrders(sellOrderIds_, buyOrderIds_);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders().length, 1);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].seller, address(0));
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].itemId, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getSellOrders()[0].price, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].buyer, address(0));
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].itemId, 0);
-        assertEq(IMarketplace(_addrs.marketplace).getBuyOrders()[0].price, 0);
+        IMarketplace(_marketplace).cancelOrders(sellOrderIds_, buyOrderIds_);
+        assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, address(0));
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].itemId, 0);
+        assertEq(IMarketplace(_marketplace).getSellOrders()[0].price, 0);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].buyer, address(0));
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].itemId, 0);
+        assertEq(IMarketplace(_marketplace).getBuyOrders()[0].price, 0);
     }
 }

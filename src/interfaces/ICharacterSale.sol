@@ -19,5 +19,11 @@ interface ICharacterSale is ICharacter {
         Signature calldata
     ) external returns (uint256 mintedId);
 
+    function sendUsdcToBankAndGameController() external;
+
+    function changeGameController(address gameController_) external;
+
+    function changeGameControllerFeePercentage(uint256 gameControllerFeePercentage_) external;
+
     function getPrice() external view returns (uint256 price_);
 }

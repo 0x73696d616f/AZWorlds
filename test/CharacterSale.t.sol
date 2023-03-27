@@ -10,7 +10,7 @@ contract CharacterSaleTest is Fixture {
 
     function testBuyCharacter() public {
         for (uint256 i = 1; i < 10; i++) {
-            assertEq(_buyCharacter(_player1, _player1PK), _cts.chainId + i * _cts.nrChains);
+            assertEq(_buyCharacter(_player1, _player1PK), _chainId + i * _nrChains);
         }
     }
 }
