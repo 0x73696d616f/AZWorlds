@@ -10,7 +10,14 @@ interface ICharacterSale is ICharacter {
         bytes32 s;
     }
 
-    function buy(uint256 usdcSent_, Signature calldata) external returns (uint256 mintedId);
+    function buy(
+        address from_,
+        uint256 usdcSent_,
+        uint256 validAfter_,
+        uint256 validBefore_,
+        bytes32 nonce_,
+        Signature calldata
+    ) external returns (uint256 mintedId);
 
     function getPrice() external view returns (uint256 price_);
 }

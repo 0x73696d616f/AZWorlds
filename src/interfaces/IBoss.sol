@@ -7,6 +7,10 @@ import { VRFV2WrapperConsumerBaseInterface } from
 import { ICharacter as IChar } from "./ICharacter.sol";
 
 interface IBoss is VRFV2WrapperConsumerBaseInterface {
+    error RoundNotOverError(uint256 roundId_);
+    error AlreadyAttackedError(uint256 charId_, uint256 roundId_);
+    error AlreadyClaimedError(uint256 charId_, uint256 roundId_);
+
     struct Round {
         bool attacked;
         bool claimed;
@@ -16,7 +20,7 @@ interface IBoss is VRFV2WrapperConsumerBaseInterface {
 
     function attackBoss(uint256 charId_) external;
 
-    function claimRewards(uint256 charId_, uint256 roundId_) external;
+    function claimRewards(uint256 charId_, uint256 roundId_) external returns (uint256 itemId_);
 
     function previewRewards(uint256 charId_, uint256 roundId_) external view returns (uint256 itemId_);
 

@@ -40,10 +40,10 @@ contract Deploy is Script {
             fee: _poolFee,
             tickLower: -200,
             tickUpper: 200,
-            amount0Desired: 10_000_000_000_000_000_000_000_000,
-            amount1Desired: 9_999_999_999_999_999_999_999_999,
-            amount0Min: 7_496_737_502_591_756_988_502_830,
-            amount1Min: 7_484_205_485_896_511_758_232_410,
+            amount0Desired: amount0ToMint,
+            amount1Desired: amount1ToMint,
+            amount0Min: 0,
+            amount1Min: 0,
             recipient: _deployerAddress,
             deadline: block.timestamp + 100
         });

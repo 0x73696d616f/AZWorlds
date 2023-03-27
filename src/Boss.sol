@@ -34,16 +34,19 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         charInfo[roundId][charId_].attacked = true;
     }
 
-    function claimRewards(uint256 charId_, uint256 roundId_) external override {
+    function claimRewards(uint256 charId_, uint256 roundId_) external override returns (uint256 itemId_) {
         nextRound();
+        uint256 seed_ = roundSeed[roundId_];
+        if (seed_ == 0) revert RoundNotOverError(roundId_);
         if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
-        if (charInfo[roundId_][charId_].attacked && !charInfo[roundId_][charId_].claimed) {
-            uint256 itemId_ = MAX_ITEM_ID
-                - MAX_ITEM_ID * Babylonian.sqrt(uint256(keccak256(abi.encodePacked(roundSeed[roundId_], charId_))))
-                    / MAX_NUMBER_SQRT;
-            _item.mint(msg.sender, itemId_);
-            charInfo[roundId_][charId_].claimed = true;
-        }
+        if (!charInfo[roundId_][charId_].attacked) revert AlreadyAttackedError(charId_, roundId_);
+        if (charInfo[roundId_][charId_].claimed) revert AlreadyClaimedError(charId_, roundId_);
+
+        itemId_ = MAX_ITEM_ID
+            - MAX_ITEM_ID * Babylonian.sqrt(uint256(keccak256(abi.encodePacked(seed_, charId_)))) / MAX_NUMBER_SQRT;
+        _item.mint(msg.sender, itemId_);
+        charInfo[roundId_][charId_].claimed = true;
+        _char.levelUp(charId_);
     }
 
     function previewRewards(uint256 charId_, uint256 roundId_) external view override returns (uint256 itemId_) {
@@ -58,7 +61,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         requestRandomness(60_000, 10, 1);
     }
 
-    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+    function fulfillRandomWords(uint256, uint256[] memory _randomWords) internal override {
         roundSeed[roundId++] = _randomWords[0];
     }
 }

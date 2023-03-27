@@ -28,13 +28,13 @@ contract MockInvestmentStrategy is InvestmentStrategy {
         bankAsset.approve(address(protocol), type(uint256).max);
     }
 
-    function invest(uint256 amount_) external override onlyBank {
-        protocol.stake(amount_);
+    function invest(uint256 amount_) external override onlyBank returns (uint256) {
+        return protocol.stake(amount_);
     }
 
     function claimRewards() external override onlyBank returns (uint256 rewards_) {
-        rewards_ = protocol.claimRewards();
-        _swapRewardTokensForBankAssetAndSendToBank();
+        protocol.claimRewards();
+        rewards_ = _swapRewardTokensForBankAssetAndSendToBank();
     }
 
     function previewRewards() external view override returns (uint256 rewards_) {
@@ -50,7 +50,7 @@ contract MockInvestmentStrategy is InvestmentStrategy {
         return protocol.getTotalStaked();
     }
 
-    function _swapRewardTokensForBankAssetAndSendToBank() internal {
+    function _swapRewardTokensForBankAssetAndSendToBank() internal returns (uint256) {
         uint256 rewardsBalance_ = rewardToken.balanceOf(address(this));
         ISwapRouter.ExactInputSingleParams memory swapParams = ISwapRouter.ExactInputSingleParams({
             tokenIn: address(rewardToken),
@@ -63,6 +63,6 @@ contract MockInvestmentStrategy is InvestmentStrategy {
             sqrtPriceLimitX96: 0
         });
 
-        swapRouter.exactInputSingle(swapParams);
+        return swapRouter.exactInputSingle(swapParams);
     }
 }

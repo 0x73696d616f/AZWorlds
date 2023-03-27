@@ -29,7 +29,7 @@ contract Marketplace is IMarketplace {
                 ++i_;
             }
         }
-        if (totalGoldInBuyOrders_ != 0) _gold.marketplaceTransferFrom(msg.sender, address(this), totalGoldInBuyOrders_);
+        if (totalGoldInBuyOrders_ != 0) _gold.privilegedTransferFrom(msg.sender, address(this), totalGoldInBuyOrders_);
 
         uint256[] memory itemIds_ = new uint256[](sellOrders_.length);
         uint256[] memory amounts_ = new uint256[](sellOrders_.length);
@@ -52,7 +52,7 @@ contract Marketplace is IMarketplace {
             SellOrder memory sellOrder_ = _sellOrders[sellOrderIds_[i_]];
             if (sellOrder_.seller == address(0)) revert SellOrderDoesNotExistError(sellOrderIds_[i_]);
             delete _sellOrders[sellOrderIds_[i_]];
-            _gold.marketplaceTransferFrom(msg.sender, sellOrder_.seller, sellOrder_.price);
+            _gold.privilegedTransferFrom(msg.sender, sellOrder_.seller, sellOrder_.price);
             _item.mint(msg.sender, sellOrder_.itemId);
             unchecked {
                 ++i_;
@@ -99,5 +99,13 @@ contract Marketplace is IMarketplace {
             }
         }
         _gold.transfer(msg.sender, totalGoldInBuyOrders_);
+    }
+
+    function getBuyOrders() external view override returns (BuyOrder[] memory) {
+        return _buyOrders;
+    }
+
+    function getSellOrders() external view override returns (SellOrder[] memory) {
+        return _sellOrders;
     }
 }

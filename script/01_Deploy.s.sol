@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./utils.sol";
 import { Script } from "@forge-std/Script.sol";
 import { MockERC20 } from "test/mocks/MockERC20.sol";
 import { TimelockController } from "@openzeppelin/contracts/governance/TimelockController.sol";
@@ -31,8 +30,6 @@ contract Deploy is Script {
     uint256 private _bossRoundDuration;
     ISwapRouter private _swapRouter;
     uint24 private _poolFee;
-
-    uint256 constant PRECISION = 2 ** 96;
 
     struct Addresses {
         address character;
@@ -73,50 +70,14 @@ contract Deploy is Script {
         addresses_.military = computeCreateAddress(_deployerAddress, nonce_ + 5);
         address governorAddress_ = computeCreateAddress(_deployerAddress, nonce_ + 6);
 
-        new Bank(addresses_.character, addresses_.marketplace, _layerZeroEndpoint, _usdc, governorAddress_);
+        new Bank(addresses_.character, addresses_.marketplace, _layerZeroEndpoint, _usdc);
         addresses_.character = address(
-            new CharacterSale(Bank(addresses_.bank ), Item(addresses_.item), addresses_.military, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains)
+            new CharacterSale(Bank(addresses_.bank ), Item(addresses_.item), addresses_.military, addresses_.boss, _layerZeroEndpoint, address(_usdc), _chainId, _nrChains)
         );
         new Item(addresses_.character, addresses_.marketplace, addresses_.boss, _layerZeroEndpoint);
         new Marketplace(Item(addresses_.item), Bank(addresses_.bank));
         new Boss(Item(addresses_.item), CharacterSale(addresses_.character), _link, _vrf2Wrapper, _bossRoundDuration);
         new Military(CharacterSale(addresses_.character), addresses_.bank);
-
-        /*uint256[] memory amounts_ = new uint256[](1);
-        amounts_[0] = 1;
-        uint256[] memory itemIds_ = new uint256[](1);
-        itemIds_[0] = 4999;
-
-        Item(addresses_.item).mintBatch(_deployerAddress, itemIds_, amounts_);
-
-        uint256 value_ = 100e18;
-
-        bytes32 hashedData_ = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                _usdc.DOMAIN_SEPARATOR(),
-                keccak256(
-                    abi.encode(
-                        _usdc.TRANSFER_WITH_AUTHORIZATION_TYPEHASH(),
-                        _deployerAddress,
-                        addresses_.character,
-                        value_,
-                        0,
-                        type(uint256).max,
-                        0
-                    )
-                )
-            )
-        );
-        CharacterSale.Signature memory signature_;
-        (signature_.v, signature_.r, signature_.s) = vm.sign(_deployerPrivateKey, hashedData_);
-
-        _usdc.mint(_deployerAddress, 100e18);
-
-        CharacterSale(addresses_.character).buy(value_, signature_);
-
-        CharacterSale(addresses_.character).equipItems(1, itemIds_);
-        */
 
         // Deploy a new TimelockGovernor contract.
         address[] memory proposers = new address[](0);
@@ -127,8 +88,7 @@ contract Deploy is Script {
         timelock_.grantRole(timelock_.PROPOSER_ROLE(), address(governor_));
 
         MockInvestmentProtocol investmentProtocol_ = new MockInvestmentProtocol(_usdc, _rewardToken);
-        MockInvestmentStrategy investmentStrategy_ =
-            new MockInvestmentStrategy(Bank(addresses_.bank), investmentProtocol_, _swapRouter, _poolFee);
+        new MockInvestmentStrategy(Bank(addresses_.bank), investmentProtocol_, _swapRouter, _poolFee);
 
         vm.stopBroadcast();
     }

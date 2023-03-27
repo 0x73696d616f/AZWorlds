@@ -15,6 +15,7 @@ interface ICharacter is IERC721, IVotes {
     error InvalidCharInfoError(CharInfo charInfo);
     error NotOwnerError(address owner);
     error OnlyPortalError(address portal);
+    error OnlyBossError(address boss);
 
     function equipItems(uint256 charId_, uint256[] calldata itemIds_) external;
 
@@ -41,6 +42,8 @@ interface ICharacter is IERC721, IVotes {
         payable;
 
     function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external;
+
+    function levelUp(uint256 charId_) external;
 
     function getCharInfo(uint256 charId_) external view returns (CharInfo memory, address);
 }

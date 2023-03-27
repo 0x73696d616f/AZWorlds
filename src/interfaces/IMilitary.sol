@@ -17,20 +17,19 @@ interface IMilitary {
     error NotBankError(address msgSender_);
     error NotCharacterError(address msgSender_);
     error NotCharOwnerError(uint256 charId_, address msgSender_);
-    error NotEnlistedError(uint256 charId_);
-    error ZeroPowerChangeError(uint256 charId_);
+    error AlreadyEnlistedError(uint256 charId_);
 
     function deposit(uint256 amount_) external;
 
     function join(uint256 charId_) external;
 
-    function leave(uint256 charId_) external;
+    function leave(uint256 charId_) external returns (uint256 rewards_);
 
     function leave(uint256 charId_, address owner_, uint256 charPower_) external;
 
-    function modifyPower(uint256 charId_, address owner_, uint256 oldPower_, int256 powerChange_) external;
+    function increasePower(uint256 charId_, address owner_, uint256 oldPower_, uint256 powerChange_) external;
 
-    function getRewards(uint256 charId_) external;
+    function getRewards(uint256 charId_) external returns (uint256 rewards_);
 
     function previewRewards(uint256 charId_) external view returns (uint256);
 

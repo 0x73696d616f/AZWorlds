@@ -16,7 +16,7 @@ abstract contract InvestmentStrategy is IInvestmentStrategy {
         bank = bank_;
     }
 
-    function invest(uint256 amount_) external virtual override onlyBank { }
+    function invest(uint256 amount_) external virtual override onlyBank returns (uint256) { }
 
     function claimRewards() external virtual override onlyBank returns (uint256) { }
 

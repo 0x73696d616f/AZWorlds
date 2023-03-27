@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 interface IInvestmentStrategy {
     error NotBankError(address sender_);
 
-    function invest(uint256 amount_) external;
+    function invest(uint256 amount_) external returns (uint256);
     function claimRewards() external returns (uint256);
     function previewRewards() external view returns (uint256);
     function withdraw(uint256 amount_) external returns (uint256);

@@ -4,14 +4,14 @@ pragma solidity ^0.8.0;
 interface IMarketplace {
     struct SellOrder {
         address seller;
-        uint48 itemId;
-        uint48 price;
+        uint16 itemId;
+        uint80 price;
     }
 
     struct BuyOrder {
         address buyer;
-        uint48 itemId;
-        uint48 price;
+        uint16 itemId;
+        uint80 price;
     }
 
     error NoOrdersError();
@@ -25,4 +25,8 @@ interface IMarketplace {
     function fullfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 
     function cancelOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
+
+    function getBuyOrders() external view returns (BuyOrder[] memory);
+
+    function getSellOrders() external view returns (SellOrder[] memory);
 }

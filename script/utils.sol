@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
 uint256 constant PRECISION = 2 ** 96;
 
 // Computes the sqrt of the u64x96 fixed point price given the AMM reserves

@@ -13,7 +13,6 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
     address public immutable _usdc;
     uint256 public immutable _chainId;
     uint256 public immutable _nrChains;
-    address public immutable _military;
 
     uint256 public totalSold; // The total number of tokens sold so far.
     uint256 public immutable startTime = block.timestamp; // When VRGDA sales begun.
@@ -22,12 +21,13 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
         IBank bank_,
         IItem item_,
         address military_,
+        address boss_,
         address lzEndpoint_,
         address usdc_,
         uint8 chainId_,
         uint8 nrChains_
     )
-        Character(bank_, item_, lzEndpoint_)
+        Character(bank_, item_, lzEndpoint_, military_, boss_)
         LinearVRGDA(
             10e18, // Target price.
             0.31e18, // Price decay percent.
@@ -36,12 +36,18 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
     {
         _usdc = usdc_;
         IUSDC(_usdc).approve(address(bank_), type(uint256).max);
-        _military = military_;
         _chainId = chainId_;
         _nrChains = nrChains_;
     }
 
-    function buy(uint256 usdcSent_, Signature calldata signature_) external override returns (uint256 mintedId_) {
+    function buy(
+        address from_,
+        uint256 usdcSent_,
+        uint256 validAfter_,
+        uint256 validBefore_,
+        bytes32 nonce_,
+        Signature calldata signature_
+    ) external override returns (uint256 mintedId_) {
         unchecked {
             mintedId_ = _chainId + _nrChains * totalSold;
             uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startTime), totalSold++);
@@ -49,13 +55,21 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character {
             require(usdcSent_ >= price, "UNDERPAID"); // Don't allow underpaying.
 
             IUSDC(_usdc).transferWithAuthorization(
-                msg.sender, address(this), usdcSent_, 0, type(uint256).max, 0, signature_.v, signature_.r, signature_.s
+                from_,
+                address(this),
+                usdcSent_,
+                validAfter_,
+                validBefore_,
+                nonce_,
+                signature_.v,
+                signature_.r,
+                signature_.s
             );
 
-            _mint(msg.sender, mintedId_); // Mint the NFT using mintedId.
+            _mint(from_, mintedId_); // Mint the NFT using mintedId.
 
             _bank.depositAndNotify(price, _military, abi.encodeWithSignature("deposit(uint256)", price));
-            if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(msg.sender, usdcSent_ - price);
+            if (usdcSent_ - price > 0) IUSDC(_usdc).transfer(from_, usdcSent_ - price);
         }
     }
 

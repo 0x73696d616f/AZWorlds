@@ -10,19 +10,27 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ICharacter } from "./interfaces/ICharacter.sol";
 import { IBank } from "./interfaces/IBank.sol";
 import { IItem } from "./interfaces/IItem.sol";
-
 import { CharacterPortal } from "./CharacterPortal.sol";
+import { IMilitary } from "./interfaces/IMilitary.sol";
 
 contract Character is ICharacter, ERC721Votes {
     CharacterPortal public immutable _portal;
     IItem public immutable _item;
     IBank public immutable _bank;
+    address public immutable _military;
+    address public immutable _boss;
+
     mapping(uint256 => CharInfo) public _charInfos;
 
-    constructor(IBank bank_, IItem item_, address lzEndpoint_) ERC721("Character", "CHAR") EIP712("Character", "1") {
+    constructor(IBank bank_, IItem item_, address lzEndpoint_, address military_, address boss_)
+        ERC721("Character", "CHAR")
+        EIP712("Character", "1")
+    {
         _bank = bank_;
         _portal = new CharacterPortal(10_000, lzEndpoint_);
         _item = item_;
+        _military = military_;
+        _boss = boss_;
     }
 
     modifier onlyCharOwner(uint256 charId_) {
@@ -35,14 +43,20 @@ contract Character is ICharacter, ERC721Votes {
         _;
     }
 
+    modifier onlyBoss() {
+        if (msg.sender != _boss) revert OnlyBossError(msg.sender);
+        _;
+    }
+
     function _mint(address to_, uint256 charId_) internal override {
         super._mint(to_, charId_);
-        _charInfos[charId_] = CharInfo(uint32(charId_), 1, 0, 0);
+        _charInfos[charId_] = CharInfo(uint32(charId_), 1, 1, 0);
     }
 
     function equipItems(uint256 charId_, uint256[] calldata itemIds_) external override onlyCharOwner(charId_) {
         uint256[] memory amounts_ = new uint256[](itemIds_.length);
         uint32 power_ = _charInfos[charId_].power;
+        uint32 oldPower_ = power_;
         for (uint256 i_; i_ < itemIds_.length;) {
             amounts_[i_] = 1;
             power_ += uint32(itemIds_[i_]);
@@ -51,18 +65,18 @@ contract Character is ICharacter, ERC721Votes {
             }
         }
         _item.burnBatch(msg.sender, itemIds_, amounts_);
-
+        IMilitary(_military).increasePower(charId_, msg.sender, oldPower_, power_ - oldPower_);
         _charInfos[charId_].power = power_;
     }
 
     function carryGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
-        _bank.transferFrom(msg.sender, address(this), goldAmount_);
+        _bank.privilegedTransferFrom(msg.sender, address(this), goldAmount_);
         _charInfos[charId_].equippedGold += uint160(goldAmount_);
     }
 
     function dropGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
         _charInfos[charId_].equippedGold -= uint160(goldAmount_);
-        _bank.transferFrom(address(this), msg.sender, goldAmount_);
+        _bank.transfer(msg.sender, goldAmount_);
     }
 
     function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_)
@@ -73,6 +87,7 @@ contract Character is ICharacter, ERC721Votes {
         CharInfo memory charInfo_ = _charInfos[charId_];
         _deleteCharInfo(charId_);
         if (charInfo_.equippedGold > 0) _bank.burn(address(this), uint256(charInfo_.equippedGold));
+        IMilitary(_military).leave(charId_, msg.sender, charInfo_.power);
         bytes[] memory data_ = new bytes[](1);
         data_[0] = abi.encode(charInfo_);
         uint256[] memory tokenId_ = new uint256[](1);
@@ -91,6 +106,7 @@ contract Character is ICharacter, ERC721Votes {
             charInfo_ = _charInfos[charIds_[i_]];
             _deleteCharInfo(charIds_[i_]);
             if (charInfo_.equippedGold > 0) _bank.burn(address(this), charInfo_.equippedGold);
+            IMilitary(_military).leave(charInfo_.charId, msg.sender, charInfo_.power);
             data_[i_] = abi.encode(charInfo_);
             unchecked {
                 ++i_;
@@ -118,6 +134,14 @@ contract Character is ICharacter, ERC721Votes {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, IERC165) returns (bool) {
         return interfaceId == type(ICharacter).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function levelUp(uint256 charId_) external override onlyBoss {
+        CharInfo memory charInfo_ = _charInfos[charId_];
+        IMilitary(_military).increasePower(charId_, msg.sender, charInfo_.power, 1000);
+        charInfo_.level += 1000;
+        charInfo_.power += 1000;
+        _charInfos[charId_] = charInfo_;
     }
 
     function _validateCharOwner(uint256 charId_) internal view {

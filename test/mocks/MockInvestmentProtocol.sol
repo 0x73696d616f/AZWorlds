@@ -23,12 +23,12 @@ contract MockInvestmentProtocol {
 
     function claimRewards() public returns (uint256 rewards_) {
         rewards_ = previewRewards();
-        MockERC20(rewardToken).mint(msg.sender, rewards_);
         lastRewardClaimed[msg.sender] = block.timestamp;
+        if (rewards_ != 0) MockERC20(rewardToken).mint(msg.sender, rewards_);
     }
 
     function previewRewards() public view returns (uint256) {
-        return totalStaked[msg.sender] * (block.timestamp - lastRewardClaimed[msg.sender]) * 5 / 100 / 365;
+        return totalStaked[msg.sender] * (block.timestamp - lastRewardClaimed[msg.sender]) * APY / 100 / 365 days;
     }
 
     function withdraw(uint256 amount_) external returns (uint256 rewards_) {
