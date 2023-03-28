@@ -51,8 +51,8 @@ library EIP712 {
                 EIP712_DOMAIN_TYPEHASH,
                 keccak256(bytes(name)),
                 keccak256(bytes(version)),
-                address(this),
-                bytes32(chainId)
+                bytes32(chainId),
+                address(this)
             )
         );
     }
