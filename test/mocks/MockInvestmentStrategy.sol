@@ -30,11 +30,13 @@ contract MockInvestmentStrategy is InvestmentStrategy {
 
     function invest(uint256 amount_) external override onlyBank {
         protocol.stake(amount_);
+        emit Invested(amount_);
     }
 
     function claimRewards() external override onlyBank returns (uint256 rewardsInAsset_) {
         uint256 rewards_ = protocol.claimRewards();
         if (rewards_ != 0) rewardsInAsset_ = _swapRewardTokensForBankAssetAndSendToBank();
+        emit RewardsClaimed(rewardsInAsset_);
     }
 
     function previewRewards() external view override returns (uint256) {
@@ -44,6 +46,7 @@ contract MockInvestmentStrategy is InvestmentStrategy {
     function withdraw(uint256 amount_) external override onlyBank {
         protocol.withdraw(amount_);
         bankAsset.transfer(address(bank), amount_);
+        emit Withdraw(amount_);
     }
 
     function getTotalStaked() external view override returns (uint256) {

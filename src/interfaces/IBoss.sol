@@ -16,6 +16,10 @@ interface IBoss is VRFV2WrapperConsumerBaseInterface {
         bool claimed;
     }
 
+    event RoundStarted(uint256 indexed roundId, uint256 timestamp);
+    event BossAttacked(uint256 indexed roundId, uint256 indexed charId);
+    event RewardClaimed(uint256 indexed roundId, uint256 indexed charId, uint256 itemId);
+
     error NotCharOwnerError(uint256 charId_, address sender_);
 
     function attackBoss(uint256 charId_) external;

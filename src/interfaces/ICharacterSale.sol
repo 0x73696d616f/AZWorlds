@@ -10,6 +10,8 @@ interface ICharacterSale is ICharacter {
         bytes32 s;
     }
 
+    event CharacterBought(address indexed buyer, uint256 indexed charId, uint256 price);
+
     function buy(
         address from_,
         uint256 usdcSent_,

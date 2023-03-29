@@ -14,6 +14,18 @@ interface IMilitary {
         uint32 power;
     }
 
+    event Deposited(uint256 amount_, uint256 expireTimestamp_);
+    event Joined(uint256 indexed charId_, uint256 power_);
+    event Left(uint256 indexed charId_, uint256 rewards_);
+    event PowerIncreased(uint256 indexed charId_, uint256 powerChange_);
+    event TotalPowerUpdated(uint256 totalPower_);
+    event FirstExpiringDepositUpdated(uint256 index);
+    event GoldPerPowerofCharUpdated(uint256 indexed charId_, uint256 goldPerPower_);
+    event GoldPerPowerUpdated(uint256 goldPerPower_);
+    event GoldBurned(uint256 amount_);
+    event TotalDepositedUpdated(uint256 totalDeposited_);
+    event RewardsClaimed(uint256 indexed charId_, uint256 rewards_);
+
     error NotBankError(address msgSender_);
     error NotCharacterError(address msgSender_);
     error NotCharOwnerError(uint256 charId_, address msgSender_);

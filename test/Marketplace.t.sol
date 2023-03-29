@@ -54,7 +54,7 @@ contract MarketplaceTest is Fixture {
         uint256[] memory sellOrderIds_ = new uint256[](1);
         sellOrderIds_[0] = 0;
         vm.prank(player2_);
-        IMarketplace(_marketplace).fullfilOrders(sellOrderIds_, buyOrderIds_);
+        IMarketplace(_marketplace).fulfilOrders(sellOrderIds_, buyOrderIds_);
         assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, address(0));

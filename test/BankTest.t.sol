@@ -5,7 +5,7 @@ import { console } from "@forge-std/console.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { Fixture } from "./Fixture.t.sol";
 import { IBank } from "src/interfaces/IBank.sol";
-import {MockERC20} from "./mocks/MockERC20.sol";
+import { MockERC20 } from "./mocks/MockERC20.sol";
 
 contract BankTest is Fixture {
     function setUp() public virtual override {
@@ -46,10 +46,6 @@ contract BankTest is Fixture {
         assertEq(IBank(_bank).previewRewards(), 0);
         assertEq(IBank(_bank).totalAssets(), 2);
     }
-
-        function testEIP() public {
-            console.log(vm.toString(MockERC20(_usdc).DOMAIN_SEPARATOR()));
-        }
 
     function _invest(uint256 usdcAmount_) internal {
         uint256 initialUsdcBalance_ = IERC20(_usdc).balanceOf(_investmentProtocol);

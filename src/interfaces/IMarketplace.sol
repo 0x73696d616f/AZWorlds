@@ -14,6 +14,13 @@ interface IMarketplace {
         uint80 price;
     }
 
+    event SellOrderPlaced(address indexed seller, uint16 itemId, uint80 price);
+    event BuyOrderPlaced(address indexed buyer, uint16 itemId, uint80 price);
+    event SellOrderCancelled(address indexed seller, uint16 itemId, uint80 price);
+    event BuyOrderCancelled(address indexed buyer, uint16 itemId, uint80 price);
+    event SellOrderFulfilled(address indexed seller, uint16 itemId, uint80 price);
+    event BuyOrderFulfilled(address indexed buyer, uint16 itemId, uint80 price);
+
     error NoOrdersError();
     error NotBuyerError(uint256 buyOrderId_);
     error NotSellerError(uint256 sellOrderId_);
@@ -22,7 +29,7 @@ interface IMarketplace {
 
     function placeOrders(SellOrder[] calldata sellOrders_, BuyOrder[] calldata buyOrders_) external;
 
-    function fullfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
+    function fulfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 
     function cancelOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 

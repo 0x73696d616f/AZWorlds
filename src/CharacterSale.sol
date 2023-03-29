@@ -56,11 +56,11 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
     ) external override returns (uint256 mintedId_) {
         unchecked {
             mintedId_ = chainId + nrChains * totalSold;
-            uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startTime), totalSold++);
+            uint256 price_ = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startTime), totalSold++);
 
-            require(usdcSent_ >= price, "UNDERPAID"); // Don't allow underpaying.
+            require(usdcSent_ >= price_, "UNDERPAID"); // Don't allow underpaying.
 
-            IUSDC(usdc).transferWithAuthorization(
+            IUSDC(usdc).receiveWithAuthorization(
                 from_,
                 address(this),
                 usdcSent_,
@@ -73,8 +73,9 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
             );
 
             _mint(from_, mintedId_); // Mint the NFT using mintedId.
-            if (usdcSent_ - price > 0) IUSDC(usdc).transfer(from_, usdcSent_ - price);
+            if (usdcSent_ - price_ > 0) IUSDC(usdc).transfer(from_, usdcSent_ - price_);
             sendUsdcToBankAndGameController();
+            emit CharacterBought(from_, mintedId_, price_);
         }
     }
 

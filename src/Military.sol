@@ -37,15 +37,24 @@ contract Military is IMilitary {
 
         _deposits.push(Deposit({ amount: uint104(amount_), expireTimestamp: uint64(block.timestamp + 365 days) }));
         _totalDeposited += amount_;
+
+        emit Deposited(amount_, block.timestamp + 365 days);
+        emit TotalDepositedUpdated(_totalDeposited);
     }
 
     function join(uint256 charId_) external override {
         if (isCharEnlisted(charId_)) revert AlreadyEnlistedError(charId_);
         (IChar.CharInfo memory charInfo_, address owner_) = _char.getCharInfo(charId_);
         _validateCharOwner(charId_, owner_);
+
         uint256 goldPerPower_ = _updateExpiredDeposits();
         _goldPerPowerByCharId[charId_] = goldPerPower_;
         _totalPower += charInfo_.power;
+
+        emit TotalPowerUpdated(charInfo_.power);
+        emit GoldPerPowerUpdated(goldPerPower_);
+        emit GoldPerPowerofCharUpdated(charId_, goldPerPower_);
+        emit Joined(charId_, charInfo_.power);
     }
 
     function leave(uint256 charId_) external override returns (uint256) {
@@ -72,6 +81,10 @@ contract Military is IMilitary {
         if (rewards_ != 0) IGold(_bank).transfer(owner_, rewards_);
 
         _totalPower += powerIncrease_;
+
+        emit RewardsClaimed(charId_, rewards_);
+        emit PowerIncreased(charId_, powerIncrease_);
+        emit TotalPowerUpdated(oldPower_ + powerIncrease_);
     }
 
     function getRewards(uint256 charId_) external override returns (uint256 rewards_) {
@@ -86,6 +99,9 @@ contract Military is IMilitary {
 
         rewards_ = (goldPerPower_ - goldPerPowerOfChar_) * charInfo_.power / PRECISION;
         if (rewards_ != 0) IGold(_bank).transfer(owner_, rewards_);
+
+        emit GoldPerPowerofCharUpdated(charId_, goldPerPower_);
+        emit RewardsClaimed(charId_, rewards_);
     }
 
     function previewRewards(uint256 charId_) external view override returns (uint256) {
@@ -110,6 +126,9 @@ contract Military is IMilitary {
 
         rewards_ = (goldPerPower_ - goldPerPowerOfChar_) * charPower_ / PRECISION;
         if (rewards_ != 0) IGold(_bank).transfer(owner_, rewards_);
+
+        emit GoldPerPowerofCharUpdated(charId_, 0);
+        emit RewardsClaimed(charId_, rewards_);
     }
 
     function _validateCharOwner(uint256 charId_, address owner_) internal view {
@@ -174,8 +193,18 @@ contract Military is IMilitary {
 
     function _updateExpiredDeposits() internal returns (uint256 goldPerPower_) {
         uint256 goldToBurn_;
-        (_totalDeposited, _firstExpiringDeposit, goldPerPower_, _lastUpdate, goldToBurn_) = _checkExpiredDeposits();
+        uint256 firstExpiringDeposit_;
+        uint256 totalDeposited_;
+        (totalDeposited_, firstExpiringDeposit_, goldPerPower_, _lastUpdate, goldToBurn_) = _checkExpiredDeposits();
+        _firstExpiringDeposit = firstExpiringDeposit_;
+        _totalDeposited = totalDeposited_;
         _goldPerPower = goldPerPower_;
+
         if (goldToBurn_ != 0) IGold(_bank).burn(address(this), goldToBurn_);
+
+        emit FirstExpiringDepositUpdated(firstExpiringDeposit_);
+        emit GoldPerPowerUpdated(goldPerPower_);
+        emit GoldBurned(goldToBurn_);
+        emit TotalDepositedUpdated(totalDeposited_);
     }
 }

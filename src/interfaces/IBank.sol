@@ -6,6 +6,9 @@ import { IInvestmentStrategy } from "./IInvestmentStrategy.sol";
 import { IGold } from "./IGold.sol";
 
 interface IBank is IERC4626, IGold {
+    event Invest(uint256 amount_);
+    event WithdrawInvestment(uint256 amount_);
+
     error NotGovernanceError(address sender_);
 
     function depositAndSendToMilitary(uint256 assets_) external;

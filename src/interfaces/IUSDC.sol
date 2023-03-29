@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IUSDC {
-    function transferWithAuthorization(
+    function receiveWithAuthorization(
         address from_,
         address to_,
         uint256 value_,

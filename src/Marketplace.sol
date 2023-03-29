@@ -25,6 +25,7 @@ contract Marketplace is IMarketplace {
             buyOrders_[i_].buyer = msg.sender;
             totalGoldInBuyOrders_ += buyOrders_[i_].price;
             _buyOrders.push(buyOrders_[i_]);
+            emit BuyOrderPlaced(buyOrders_[i_].buyer, buyOrders_[i_].itemId, buyOrders_[i_].price);
             unchecked {
                 ++i_;
             }
@@ -38,6 +39,7 @@ contract Marketplace is IMarketplace {
             itemIds_[i_] = sellOrders_[i_].itemId;
             amounts_[i_] = 1;
             _sellOrders.push(sellOrders_[i_]);
+            emit SellOrderPlaced(sellOrders_[i_].seller, sellOrders_[i_].itemId, sellOrders_[i_].price);
             unchecked {
                 ++i_;
             }
@@ -45,7 +47,7 @@ contract Marketplace is IMarketplace {
         if (itemIds_.length != 0) _item.burnBatch(msg.sender, itemIds_, amounts_);
     }
 
-    function fullfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external override {
+    function fulfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external override {
         if (sellOrderIds_.length == 0 && buyOrderIds_.length == 0) revert NoOrdersError();
 
         for (uint256 i_; i_ < sellOrderIds_.length;) {
@@ -54,6 +56,7 @@ contract Marketplace is IMarketplace {
             delete _sellOrders[sellOrderIds_[i_]];
             _gold.privilegedTransferFrom(msg.sender, sellOrder_.seller, sellOrder_.price);
             _item.mint(msg.sender, sellOrder_.itemId);
+            emit SellOrderFulfilled(sellOrder_.seller, sellOrder_.itemId, sellOrder_.price);
             unchecked {
                 ++i_;
             }
@@ -66,6 +69,7 @@ contract Marketplace is IMarketplace {
             delete _buyOrders[buyOrderIds_[i_]];
             totalGoldInBuyOrders_ += buyOrder_.price;
             _item.privilegedSafeTransferFrom(msg.sender, buyOrder_.buyer, buyOrder_.itemId);
+            emit BuyOrderFulfilled(buyOrder_.buyer, buyOrder_.itemId, buyOrder_.price);
             unchecked {
                 ++i_;
             }
@@ -82,6 +86,7 @@ contract Marketplace is IMarketplace {
             if (sellOrder_.seller != msg.sender) revert NotSellerError(sellOrderIds_[i_]);
             delete _sellOrders[sellOrderIds_[i_]];
             _item.mint(msg.sender, sellOrder_.itemId);
+            emit SellOrderCancelled(sellOrder_.seller, sellOrder_.itemId, sellOrder_.price);
             unchecked {
                 ++i_;
             }
@@ -94,6 +99,7 @@ contract Marketplace is IMarketplace {
             if (buyOrder_.buyer != msg.sender) revert NotBuyerError(buyOrderIds_[i_]);
             delete _buyOrders[buyOrderIds_[i_]];
             totalGoldInBuyOrders_ += buyOrder_.price;
+            emit BuyOrderCancelled(buyOrder_.buyer, buyOrder_.itemId, buyOrder_.price);
             unchecked {
                 ++i_;
             }

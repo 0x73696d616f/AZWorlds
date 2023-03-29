@@ -174,7 +174,7 @@ contract Fixture is Test {
     {
         bytes32 hashedMessage = keccak256(
             abi.encode(
-                MockERC20(_usdc).TRANSFER_WITH_AUTHORIZATION_TYPEHASH(),
+                MockERC20(_usdc).RECEIVE_WITH_AUTHORIZATION_TYPEHASH(),
                 buyer_,
                 _character,
                 value_,

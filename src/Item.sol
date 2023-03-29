@@ -22,26 +22,31 @@ contract Item is IItem, ONFT1155 {
     function burn(address from, uint256 id) external override {
         _validateSender();
         _burn(from, id, 1);
+        emit ItemBurned(from, id);
     }
 
     function mint(address to, uint256 id) external override {
         _validateSender();
         _mint(to, id, 1, "");
+        emit ItemMinted(to, id);
     }
 
     function burnBatch(address from, uint256[] memory ids, uint256[] memory amounts) external override {
         _validateSender();
         _burnBatch(from, ids, amounts);
+        emit ItemBatchBurned(from, ids, amounts);
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts) external override {
         _validateSender();
         _mintBatch(to, ids, amounts, "");
+        emit ItemBatchMinted(to, ids, amounts);
     }
 
     function privilegedSafeTransferFrom(address from_, address to_, uint256 id_) external override {
         _validateSender();
         _safeTransferFrom(from_, to_, id_, 1, "");
+        emit ItemPrivilegedTransfer(from_, to_, id_);
     }
 
     function _validateSender() internal view {

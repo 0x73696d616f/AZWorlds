@@ -67,16 +67,19 @@ contract Character is ICharacter, ERC721Votes {
         item.burnBatch(msg.sender, itemIds_, amounts_);
         IMilitary(military).increasePower(charId_, msg.sender, oldPower_, power_ - oldPower_);
         _charInfos[charId_].power = power_;
+        emit ItemsEquipped(charId_, itemIds_);
     }
 
     function carryGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
         bank.privilegedTransferFrom(msg.sender, address(this), goldAmount_);
         _charInfos[charId_].equippedGold += uint160(goldAmount_);
+        emit GoldCarried(charId_, goldAmount_);
     }
 
     function dropGold(uint256 charId_, uint256 goldAmount_) external override onlyCharOwner(charId_) {
         _charInfos[charId_].equippedGold -= uint160(goldAmount_);
         bank.transfer(msg.sender, goldAmount_);
+        emit GoldDropped(charId_, goldAmount_);
     }
 
     function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_)
@@ -93,6 +96,7 @@ contract Character is ICharacter, ERC721Votes {
         uint256[] memory tokenId_ = new uint256[](1);
         tokenId_[0] = charId_;
         portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
+        emit CharacterSent(charInfo_, dstChainId_, toAddress_);
     }
 
     function sendBatchFrom(address from_, uint16 dstChainId_, address toAddress_, uint256[] calldata charIds_)
@@ -108,6 +112,7 @@ contract Character is ICharacter, ERC721Votes {
             if (charInfo_.equippedGold > 0) bank.burn(address(this), charInfo_.equippedGold);
             IMilitary(military).leave(charInfo_.charId, msg.sender, charInfo_.power);
             data_[i_] = abi.encode(charInfo_);
+            emit CharacterSent(charInfo_, dstChainId_, toAddress_);
             unchecked {
                 ++i_;
             }
@@ -126,6 +131,7 @@ contract Character is ICharacter, ERC721Votes {
         (CharInfo memory charInfo_) = abi.decode(data_, (CharInfo));
         _charInfos[tokenId_] = charInfo_;
         if (charInfo_.equippedGold > 0) bank.mint(address(this), charInfo_.equippedGold);
+        emit CharacterReceived(charInfo_, toAddress_);
     }
 
     function getCharInfo(uint256 charId_) external view override returns (CharInfo memory, address) {
@@ -142,6 +148,7 @@ contract Character is ICharacter, ERC721Votes {
         charInfo_.level += 1000;
         charInfo_.power += 1000;
         _charInfos[charId_] = charInfo_;
+        emit CharacterLevelUp(charId_, charInfo_.level);
     }
 
     function _validateCharOwner(uint256 charId_) internal view {

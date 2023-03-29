@@ -32,6 +32,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         nextRound();
         if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
         charInfo[roundId][charId_].attacked = true;
+        emit BossAttacked(roundId, charId_);
     }
 
     function claimRewards(uint256 charId_, uint256 roundId_) external override returns (uint256 itemId_) {
@@ -47,6 +48,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         _item.mint(msg.sender, itemId_);
         charInfo[roundId_][charId_].claimed = true;
         _char.levelUp(charId_);
+        emit RewardClaimed(roundId_, charId_, itemId_);
     }
 
     function previewRewards(uint256 charId_, uint256 roundId_) external view override returns (uint256 itemId_) {
@@ -59,6 +61,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         if (block.timestamp - lastRoundTimestamp < ROUND_DURATION) return;
         lastRoundTimestamp = block.timestamp;
         requestRandomness(60_000, 10, 1);
+        emit RoundStarted(roundId, block.timestamp);
     }
 
     function fulfillRandomWords(uint256, uint256[] memory _randomWords) internal override {

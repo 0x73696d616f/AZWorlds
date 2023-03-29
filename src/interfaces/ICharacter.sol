@@ -12,6 +12,13 @@ interface ICharacter is IERC721, IVotes {
         uint160 equippedGold;
     }
 
+    event ItemsEquipped(uint256 indexed charId, uint256[] itemIds);
+    event GoldCarried(uint256 indexed charId, uint256 goldAmount);
+    event GoldDropped(uint256 indexed charId, uint256 goldAmount);
+    event CharacterSent(CharInfo indexed charInfo, uint16 dstChainId, address toAddress);
+    event CharacterReceived(CharInfo indexed charInfo, address fromAddress);
+    event CharacterLevelUp(uint256 indexed charId, uint32 level);
+
     error InvalidCharInfoError(CharInfo charInfo);
     error NotOwnerError(address owner);
     error OnlyPortalError(address portal);

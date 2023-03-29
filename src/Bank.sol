@@ -40,10 +40,12 @@ contract Bank is IBank, ERC4626, Gold {
     function invest(uint256 amount_) public override onlyOwner {
         IERC20(asset()).transfer(address(investmentStrategy), amount_);
         investmentStrategy.invest(amount_);
+        emit Invest(amount_);
     }
 
     function withdrawInvestment(uint256 amount_) external override onlyOwner {
         investmentStrategy.withdraw(amount_);
+        emit WithdrawInvestment(amount_);
     }
 
     function _claimRewards() internal returns (uint256 rewards_) {

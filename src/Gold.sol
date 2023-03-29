@@ -20,15 +20,18 @@ contract Gold is OFT, IGold {
     function privilegedTransferFrom(address from_, address to_, uint256 amount_) external override {
         _validateSender();
         _transfer(from_, to_, amount_);
+        emit GoldPrivilegedTransfer(from_, to_, amount_);
     }
 
     function burn(address account_, uint256 amount_) external override {
         _burn(account_, amount_);
+        emit GoldBurned(account_, amount_);
     }
 
     function mint(address account_, uint256 amount_) external override {
         _onlyCharacter();
         _mint(account_, amount_);
+        emit GoldMinted(account_, amount_);
     }
 
     function _validateSender() internal view {
