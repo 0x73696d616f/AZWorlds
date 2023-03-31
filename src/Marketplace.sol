@@ -17,34 +17,32 @@ contract Marketplace is IMarketplace {
         _gold = gold_;
     }
 
-    function placeOrders(SellOrder[] memory sellOrders_, BuyOrder[] memory buyOrders_) external override {
-        if (sellOrders_.length == 0 && buyOrders_.length == 0) revert NoOrdersError();
+    function placeOrders(uint256[] calldata sellOrdersIds_, uint80[] calldata sellOrderPrices_, uint16[] calldata buyOrdersIds_, uint80[] calldata buyOrderPrices_) external override {
+        if (sellOrdersIds_.length == 0 && buyOrdersIds_.length == 0) revert NoOrdersError();
+        require(sellOrdersIds_.length == sellOrderPrices_.length, "Marketplace: sellOrdersIds_.length != sellOrderPrices_.length");
+        require(buyOrdersIds_.length == buyOrderPrices_.length, "Marketplace: buyOrdersIds_.length != buyOrderPrices_.length");
 
         uint256 totalGoldInBuyOrders_;
-        for (uint256 i_; i_ < buyOrders_.length;) {
-            buyOrders_[i_].buyer = msg.sender;
-            totalGoldInBuyOrders_ += buyOrders_[i_].price;
-            _buyOrders.push(buyOrders_[i_]);
-            emit BuyOrderPlaced(buyOrders_[i_].buyer, buyOrders_[i_].itemId, buyOrders_[i_].price);
+        for (uint256 i_; i_ < buyOrdersIds_.length;) {
+            totalGoldInBuyOrders_ += buyOrderPrices_[i_];
+            _buyOrders.push(BuyOrder(msg.sender, buyOrdersIds_[i_], buyOrderPrices_[i_]));
+            emit BuyOrderPlaced(msg.sender, buyOrdersIds_[i_], buyOrderPrices_[i_]);
             unchecked {
                 ++i_;
             }
         }
         if (totalGoldInBuyOrders_ != 0) _gold.privilegedTransferFrom(msg.sender, address(this), totalGoldInBuyOrders_);
 
-        uint256[] memory itemIds_ = new uint256[](sellOrders_.length);
-        uint256[] memory amounts_ = new uint256[](sellOrders_.length);
-        for (uint256 i_; i_ < sellOrders_.length;) {
-            sellOrders_[i_].seller = msg.sender;
-            itemIds_[i_] = sellOrders_[i_].itemId;
+        uint256[] memory amounts_ = new uint256[](sellOrdersIds_.length);
+        for (uint256 i_; i_ < sellOrdersIds_.length;) {
             amounts_[i_] = 1;
-            _sellOrders.push(sellOrders_[i_]);
-            emit SellOrderPlaced(sellOrders_[i_].seller, sellOrders_[i_].itemId, sellOrders_[i_].price);
+            _sellOrders.push(SellOrder(msg.sender, uint16(sellOrdersIds_[i_]), sellOrderPrices_[i_]));
+            emit SellOrderPlaced(msg.sender, uint16(sellOrdersIds_[i_]), sellOrderPrices_[i_]);
             unchecked {
                 ++i_;
             }
         }
-        if (itemIds_.length != 0) _item.burnBatch(msg.sender, itemIds_, amounts_);
+        if (sellOrdersIds_.length != 0) _item.burnBatch(msg.sender, sellOrdersIds_, amounts_);
     }
 
     function fulfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external override {

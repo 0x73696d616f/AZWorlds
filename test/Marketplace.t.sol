@@ -29,17 +29,17 @@ contract MarketplaceTest is Fixture {
         uint256 sellOrderPrice_ = 20;
         uint256 buyOrderPrice_ = 10;
 
-        vm.prank(_player1);
-        IMarketplace.SellOrder memory sellOrder_ =
-            IMarketplace.SellOrder(address(0), uint16(player1ItemId_), uint80(sellOrderPrice_));
-        IMarketplace.BuyOrder memory buyOrder_ =
-            IMarketplace.BuyOrder(address(0), uint16(player2ItemId_), uint80(buyOrderPrice_));
-        IMarketplace.SellOrder[] memory sellOrders_ = new IMarketplace.SellOrder[](1);
-        sellOrders_[0] = sellOrder_;
-        IMarketplace.BuyOrder[] memory buyOrders_ = new IMarketplace.BuyOrder[](1);
-        buyOrders_[0] = buyOrder_;
+        uint256[] memory sellOrderItemIds_ = new uint256[](1);
+        sellOrderItemIds_[0] = player1ItemId_;
+        uint16[] memory buyOrderItemIds_ = new uint16[](1);
+        buyOrderItemIds_[0] = uint16(player2ItemId_);
+        uint80[] memory sellOrderPrices_ = new uint80[](1);
+        sellOrderPrices_[0] = uint80(sellOrderPrice_);
+        uint80[] memory buyOrderPrices_ = new uint80[](1);
+        buyOrderPrices_[0] = uint80(buyOrderPrice_);
 
-        IMarketplace(_marketplace).placeOrders(sellOrders_, buyOrders_);
+        vm.prank(_player1);
+        IMarketplace(_marketplace).placeOrders(sellOrderItemIds_, sellOrderPrices_, buyOrderItemIds_, buyOrderPrices_);
         assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, _player1);
@@ -89,17 +89,17 @@ contract MarketplaceTest is Fixture {
         uint256 sellOrderPrice_ = 20;
         uint256 buyOrderPrice_ = 10;
 
-        vm.prank(_player1);
-        IMarketplace.SellOrder memory sellOrder_ =
-            IMarketplace.SellOrder(address(0), uint16(player1ItemId_), uint80(sellOrderPrice_));
-        IMarketplace.BuyOrder memory buyOrder_ =
-            IMarketplace.BuyOrder(address(0), uint16(player2ItemId_), uint80(buyOrderPrice_));
-        IMarketplace.SellOrder[] memory sellOrders_ = new IMarketplace.SellOrder[](1);
-        sellOrders_[0] = sellOrder_;
-        IMarketplace.BuyOrder[] memory buyOrders_ = new IMarketplace.BuyOrder[](1);
-        buyOrders_[0] = buyOrder_;
+        uint256[] memory sellOrderItemIds_ = new uint256[](1);
+        sellOrderItemIds_[0] = player1ItemId_;
+        uint16[] memory buyOrderItemIds_ = new uint16[](1);
+        buyOrderItemIds_[0] = uint16(player2ItemId_);
+        uint80[] memory sellOrderPrices_ = new uint80[](1);
+        sellOrderPrices_[0] = uint80(sellOrderPrice_);
+        uint80[] memory buyOrderPrices_ = new uint80[](1);
+        buyOrderPrices_[0] = uint80(buyOrderPrice_);
 
-        IMarketplace(_marketplace).placeOrders(sellOrders_, buyOrders_);
+        vm.prank(_player1);
+        IMarketplace(_marketplace).placeOrders(sellOrderItemIds_, sellOrderPrices_, buyOrderItemIds_, buyOrderPrices_);
         assertEq(IMarketplace(_marketplace).getSellOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getBuyOrders().length, 1);
         assertEq(IMarketplace(_marketplace).getSellOrders()[0].seller, _player1);

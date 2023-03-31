@@ -154,7 +154,7 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
     function levelUp(uint256 charId_) external override onlyBoss {
         CharInfo memory charInfo_ = _charInfos[charId_];
         IMilitary(military).increasePower(charId_, msg.sender, charInfo_.power, 1000);
-        charInfo_.level += 1000;
+        charInfo_.level += 1;
         charInfo_.power += 1000;
         _charInfos[charId_] = charInfo_;
         emit CharacterLevelUp(charId_, charInfo_.level);

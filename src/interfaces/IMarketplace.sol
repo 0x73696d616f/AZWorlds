@@ -27,7 +27,7 @@ interface IMarketplace {
     error SellOrderDoesNotExistError(uint256 sellOrderId_);
     error BuyOrderDoesNotExistError(uint256 buyOrderId_);
 
-    function placeOrders(SellOrder[] calldata sellOrders_, BuyOrder[] calldata buyOrders_) external;
+    function placeOrders(uint256[] calldata sellOrdersIds_, uint80[] calldata sellOrderPrices_, uint16[] calldata buyOrdersIds_, uint80[] calldata buyOrderPrices) external;
 
     function fulfilOrders(uint256[] calldata sellOrderIds_, uint256[] calldata buyOrderIds_) external;
 
