@@ -52,7 +52,8 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
         uint256 validAfter_,
         uint256 validBefore_,
         bytes32 nonce_,
-        Signature calldata signature_
+        Signature calldata signature_,
+        string memory tokenURI_
     ) external override returns (uint256 mintedId_) {
         unchecked {
             mintedId_ = chainId + nrChains * totalSold;
@@ -72,10 +73,10 @@ contract CharacterSale is ICharacterSale, LinearVRGDA, Character, Ownable {
                 signature_.s
             );
 
-            _mint(from_, mintedId_); // Mint the NFT using mintedId.
+            _mint(from_, mintedId_, tokenURI_); // Mint the NFT using mintedId.
             if (usdcSent_ - price_ > 0) IUSDC(usdc).transfer(from_, usdcSent_ - price_);
             sendUsdcToBankAndGameController();
-            emit CharacterBought(from_, mintedId_, price_);
+            emit CharacterBought(from_, mintedId_, price_, tokenURI_);
         }
     }
 

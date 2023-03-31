@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { ERC721Votes } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
+import { ERC721URIStorage } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -13,7 +14,7 @@ import { IItem } from "./interfaces/IItem.sol";
 import { CharacterPortal } from "./CharacterPortal.sol";
 import { IMilitary } from "./interfaces/IMilitary.sol";
 
-contract Character is ICharacter, ERC721Votes {
+contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
     CharacterPortal public immutable portal;
     IItem public immutable item;
     IBank public immutable bank;
@@ -48,9 +49,10 @@ contract Character is ICharacter, ERC721Votes {
         _;
     }
 
-    function _mint(address to_, uint256 charId_) internal override {
+    function _mint(address to_, uint256 charId_, string memory tokenURI_) internal {
         super._mint(to_, charId_);
         _charInfos[charId_] = CharInfo(uint32(charId_), 1, 1, 0);
+        _setTokenURI(charId_, tokenURI_);
     }
 
     function equipItems(uint256 charId_, uint256[] calldata itemIds_) external override onlyCharOwner(charId_) {
@@ -138,8 +140,15 @@ contract Character is ICharacter, ERC721Votes {
         return (_charInfos[charId_], ownerOf(charId_));
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, IERC165) returns (bool) {
-        return interfaceId == type(ICharacter).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721, IERC165, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(ICharacter).interfaceId || ERC721.supportsInterface(interfaceId)
+            || ERC721URIStorage.supportsInterface(interfaceId) || super.supportsInterface(interfaceId);
     }
 
     function levelUp(uint256 charId_) external override onlyBoss {
@@ -163,8 +172,16 @@ contract Character is ICharacter, ERC721Votes {
 
     function _afterTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
-        override(ERC721Votes)
+        override(ERC721Votes, ERC721)
     {
         ERC721Votes._afterTokenTransfer(from, to, tokenId, batchSize);
+    }
+
+    function _burn(uint256 tokenId) internal override(ERC721URIStorage, ERC721) {
+        ERC721URIStorage._burn(tokenId);
+    }
+
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
+        return ERC721URIStorage.tokenURI(tokenId);
     }
 }

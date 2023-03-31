@@ -146,8 +146,9 @@ contract Fixture is Test {
         MockERC20(_usdc).mint(buyer_, value_);
 
         vm.prank(buyer_);
-        uint256 charId_ =
-            CharacterSale(_character).buy(buyer_, value_, 0, type(uint256).max, bytes32(_nonces[buyer_]++), signature_);
+        uint256 charId_ = CharacterSale(_character).buy(
+            buyer_, value_, 0, type(uint256).max, bytes32(_nonces[buyer_]++), signature_, ""
+        );
         assertEq(CharacterSale(_character).ownerOf(charId_), buyer_);
         assertEq(MockERC20(_usdc).balanceOf(buyer_), 0);
         uint256 deployerFee_ = value_ * CharacterSale(_character).gameControllerFeePercentage() / 100;

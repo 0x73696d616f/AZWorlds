@@ -10,7 +10,7 @@ interface ICharacterSale is ICharacter {
         bytes32 s;
     }
 
-    event CharacterBought(address indexed buyer, uint256 indexed charId, uint256 price);
+    event CharacterBought(address indexed buyer, uint256 indexed charId, uint256 price, string tokenURI);
 
     function buy(
         address from_,
@@ -18,7 +18,8 @@ interface ICharacterSale is ICharacter {
         uint256 validAfter_,
         uint256 validBefore_,
         bytes32 nonce_,
-        Signature calldata
+        Signature calldata signature_,
+        string memory tokenURI_
     ) external returns (uint256 mintedId);
 
     function sendUsdcToBankAndGameController() external;

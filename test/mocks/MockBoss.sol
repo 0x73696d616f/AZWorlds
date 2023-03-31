@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import { VRFV2WrapperConsumerBase } from "src/dependencies/chainlink/VRFV2WrapperConsumerBase.sol";
 import { Babylonian } from "src/dependencies/Babylonian.sol";
-import { IItem } from "./interfaces/IItem.sol";
-import { ICharacter as IChar } from "./interfaces/ICharacter.sol";
-import { IBoss } from "./interfaces/IBoss.sol";
+import { IItem } from "../../src/interfaces/IItem.sol";
+import { ICharacter as IChar } from "../../src/interfaces/ICharacter.sol";
+import { IBoss } from "../../src/interfaces/IBoss.sol";
 
-contract Boss is IBoss, VRFV2WrapperConsumerBase {
+contract MockBoss is IBoss, VRFV2WrapperConsumerBase {
     uint256 public immutable ROUND_DURATION;
     uint256 public constant MAX_ITEM_ID = 4999;
     uint256 public immutable MAX_NUMBER_SQRT;
@@ -30,7 +30,6 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
 
     function attackBoss(uint256 charId_) external override {
         nextRound();
-        if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
         charInfo[roundId][charId_].attacked = true;
         emit BossAttacked(roundId, charId_);
     }
@@ -39,15 +38,11 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         nextRound();
         uint256 seed_ = roundSeed[roundId_];
         if (seed_ == 0) revert RoundNotOverError(roundId_);
-        if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
         if (!charInfo[roundId_][charId_].attacked) revert AlreadyAttackedError(charId_, roundId_);
         if (charInfo[roundId_][charId_].claimed) revert AlreadyClaimedError(charId_, roundId_);
-
+        charInfo[roundId_][charId_].claimed = true;
         itemId_ = MAX_ITEM_ID
             - MAX_ITEM_ID * Babylonian.sqrt(uint256(keccak256(abi.encodePacked(seed_, charId_)))) / MAX_NUMBER_SQRT;
-        _item.mint(msg.sender, itemId_);
-        charInfo[roundId_][charId_].claimed = true;
-        _char.levelUp(charId_);
         emit RewardClaimed(roundId_, charId_, itemId_);
     }
 

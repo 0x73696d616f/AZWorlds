@@ -58,7 +58,6 @@ contract Deploy is Script {
     function setUp() public {
         _deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         _deployerAddress = vm.addr(_deployerPrivateKey);
-        //_swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     }
 
     function run() public {
@@ -68,6 +67,7 @@ contract Deploy is Script {
     }
 
     function _deploy() internal {
+        //_swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
         _swapRouter = ISwapRouter(address(new MockSwapRouter())); // Sepolia has no uniswap
         _rewardToken = new RewardToken();
         _usdc = new USDC();
