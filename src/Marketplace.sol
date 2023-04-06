@@ -17,10 +17,21 @@ contract Marketplace is IMarketplace {
         _gold = gold_;
     }
 
-    function placeOrders(uint256[] calldata sellOrdersIds_, uint80[] calldata sellOrderPrices_, uint16[] calldata buyOrdersIds_, uint80[] calldata buyOrderPrices_) external override {
+    function placeOrders(
+        uint256[] calldata sellOrdersIds_,
+        uint80[] calldata sellOrderPrices_,
+        uint16[] calldata buyOrdersIds_,
+        uint80[] calldata buyOrderPrices_
+    ) external override {
         if (sellOrdersIds_.length == 0 && buyOrdersIds_.length == 0) revert NoOrdersError();
-        require(sellOrdersIds_.length == sellOrderPrices_.length, "Marketplace: sellOrdersIds_.length != sellOrderPrices_.length");
-        require(buyOrdersIds_.length == buyOrderPrices_.length, "Marketplace: buyOrdersIds_.length != buyOrderPrices_.length");
+        require(
+            sellOrdersIds_.length == sellOrderPrices_.length,
+            "Marketplace: sellOrdersIds_.length != sellOrderPrices_.length"
+        );
+        require(
+            buyOrdersIds_.length == buyOrderPrices_.length,
+            "Marketplace: buyOrdersIds_.length != buyOrderPrices_.length"
+        );
 
         uint256 totalGoldInBuyOrders_;
         for (uint256 i_; i_ < buyOrdersIds_.length;) {

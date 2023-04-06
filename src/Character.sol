@@ -51,7 +51,7 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
 
     function _mint(address to_, uint256 charId_, string memory tokenURI_) internal {
         super._mint(to_, charId_);
-        _charInfos[charId_] = CharInfo(uint32(charId_), 1, 1, 0);
+        _charInfos[charId_] = CharInfo(uint32(charId_), 1, 1000, 0);
         _setTokenURI(charId_, tokenURI_);
     }
 
@@ -97,7 +97,7 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
         data_[0] = abi.encode(charInfo_);
         uint256[] memory tokenId_ = new uint256[](1);
         tokenId_[0] = charId_;
-        portal.send(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
+        portal.send{ value: msg.value }(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
         emit CharacterSent(charInfo_, dstChainId_, toAddress_);
     }
 
@@ -119,7 +119,7 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
                 ++i_;
             }
         }
-        portal.send(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
+        portal.send{ value: msg.value }(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
     }
 
     function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external override onlyPortal {

@@ -13,5 +13,5 @@ interface ICharacterPortal is IONFT721Core {
         uint256[] memory tokenIds_,
         address payable refundAddress_,
         bytes[] memory data_
-    ) external;
+    ) external payable;
 }

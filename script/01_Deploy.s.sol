@@ -62,7 +62,7 @@ contract Deploy is Script {
 
     function run() public {
         vm.startBroadcast(_deployerPrivateKey);
-        _deploy();
+        //_deploy();
         vm.stopBroadcast();
     }
 

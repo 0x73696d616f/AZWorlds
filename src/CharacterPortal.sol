@@ -22,7 +22,7 @@ contract CharacterPortal is ICharacterPortal, ONFT721Core {
         uint256[] memory tokenIds_,
         address payable refundAddress_,
         bytes[] memory data_
-    ) external {
+    ) external payable override {
         if (msg.sender != address(_character)) revert NotCharacterError(msg.sender);
         _send(from_, dstChainId_, abi.encode(toAddress_), tokenIds_, refundAddress_, address(0), "", data_);
     }
