@@ -152,12 +152,13 @@ contract UpVsDownGameV2 is Ownable {
         pools[poolId].poolBetsLimit = poolBetsLimit;
     }
 
-    function trigger(bytes calldata poolId, uint32 batchSize) public onlyPoolExists(poolId) {
+    function trigger(bytes calldata poolId, uint32 batchSize, uint256 price) public onlyPoolExists(poolId) {
         Round storage currentRound = pools[poolId];
 
         if (isPoolOpen(poolId) && int64(uint64(block.timestamp)) > currentRound.roundStartTime + 2 * GAME_DURATION) {
             require(isRunning, "The game is not running, rounds can only be ended at this point");
-            currentRound.startPrice = int32(uint32(priceFeed.getRate(WBTC, usdc, true)));
+            //currentRound.startPrice = int32(uint32(priceFeed.getRate(WBTC, usdc, true)));
+            currentRound.startPrice = int32(uint32(price));
             currentRound.roundStartTime = int64(uint64(block.timestamp));
 
             emit RoundStarted(
@@ -173,7 +174,8 @@ contract UpVsDownGameV2 is Ownable {
             currentRound.endPrice == 0 && int64(uint64(block.timestamp)) > currentRound.roundStartTime + GAME_DURATION
         ) {
             require(tx.origin == msg.sender, "Only EOA");
-            currentRound.endPrice = int32(uint32(priceFeed.getRate(WBTC, usdc, true)));
+            //currentRound.endPrice = int32(uint32(priceFeed.getRate(WBTC, usdc, true)));
+            currentRound.endPrice = int32(uint32(price));
 
             emit RoundEnded(
                 poolId, int64(uint64(block.timestamp)), currentRound.startPrice, currentRound.endPrice, poolId

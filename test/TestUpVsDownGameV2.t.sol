@@ -59,7 +59,7 @@ contract UpVsDownGameV2Test is Fixture {
         assertEq(Bank(_bank).balanceOf(player2_), 80);
         assertEq(Bank(_bank).balanceOf(_game), 30);
 
-        game_.trigger(poolId_, 2);
+        game_.trigger(poolId_, 2, 10);
         assertEq(game_.isPoolOpen(poolId_), false);
         vm.warp(block.timestamp + uint32(game_.GAME_DURATION()) + 1);
         vm.mockCall(
@@ -67,7 +67,7 @@ contract UpVsDownGameV2Test is Fixture {
         );
 
         vm.prank(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38); //tx.origin
-        game_.trigger(poolId_, 2);
+        game_.trigger(poolId_, 2, 20);
 
         assertEq(Bank(_bank).balanceOf(player1_), 119); // 90 + 30*95/100
         assertEq(Bank(_bank).balanceOf(player2_), 80);
@@ -121,14 +121,14 @@ contract UpVsDownGameV2Test is Fixture {
         assertEq(Bank(_bank).balanceOf(player2_), 80);
         assertEq(Bank(_bank).balanceOf(_game), 30);
 
-        game_.trigger(poolId_, 2);
+        game_.trigger(poolId_, 2, 10);
         assertEq(game_.isPoolOpen(poolId_), false);
         vm.warp(block.timestamp + uint32(game_.GAME_DURATION()) + 1);
         vm.prank(_game);
         IERC20(_bank).transfer(_deployer, 30);
 
         vm.prank(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38); //tx.origin
-        game_.trigger(poolId_, 2);
+        game_.trigger(poolId_, 2, 20);
         assertEq(game_.lostGold(player1_), 10);
         assertEq(game_.lostGold(player2_), 20);
 
