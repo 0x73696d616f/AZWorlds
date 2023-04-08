@@ -13,7 +13,7 @@ contract CharacterTest is Fixture {
 
     function testEquipItems_ok() public {
         uint256[] memory itemIds_ = new uint256[](10);
-        uint256 expectedPower_ = 1;
+        uint256 expectedPower_ = 1000;
         for (uint256 i_ = 0; i_ < 10; i_++) {
             itemIds_[i_] = i_;
             _mintItem(_player1, i_);

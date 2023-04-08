@@ -17,10 +17,10 @@ contract BossTest is Fixture {
         Boss(_boss).attackBoss(_player1CharId);
         vm.warp(_bossRoundDuration + block.timestamp);
         vm.prank(_player1);
-        Boss(_boss).nextRound();
+        vm.store(_boss, bytes32(uint256(3)), bytes32(uint256(1)));
         assertEq(Boss(_boss).roundId(), 1);
         uint256[] memory itemId_ = new uint256[](1);
-        itemId_[0] = type(uint2 56).max / 2;
+        itemId_[0] = type(uint256).max / 2;
         vm.prank(_vrf2Wrapper);
         IBoss(_boss).rawFulfillRandomWords(0, itemId_);
         vm.prank(_player1);

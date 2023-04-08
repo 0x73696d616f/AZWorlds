@@ -114,10 +114,12 @@ contract MilitaryTest is Fixture {
         uint256 player2CharId_ = _buyCharacter(player2_, 4);
         vm.prank(player2_);
         IBoss(_boss).attackBoss(player2CharId_);
-        vm.warp(Boss(_boss).ROUND_DURATION());
-        vm.prank(_vrf2Wrapper);
+        vm.warp(Boss(_boss).ROUND_DURATION() + block.timestamp);
+        vm.store(_boss, bytes32(uint256(3)), bytes32(uint256(1)));
+        assertEq(Boss(_boss).roundId(), 1);
         uint256[] memory itemId_ = new uint256[](1);
         itemId_[0] = type(uint256).max / 2;
+        vm.prank(_vrf2Wrapper);
         IBoss(_boss).rawFulfillRandomWords(0, itemId_);
         vm.prank(player2_);
         IBoss(_boss).claimRewards(player2CharId_, 0);
@@ -136,7 +138,7 @@ contract MilitaryTest is Fixture {
         rewards_ = IMilitary(_military).getRewards(player2CharId_);
         assertGe(rewards_, initialBalance_ / 2);
 
-        assertEq(IGold(_bank).balanceOf(_military), 1); // rounding error
+        assertEq(IGold(_bank).balanceOf(_military), 2); // rounding error
 
         vm.warp(2 * 365 days + 1);
         vm.prank(_player1);
@@ -146,6 +148,6 @@ contract MilitaryTest is Fixture {
         rewards_ = IMilitary(_military).getRewards(player2CharId_);
         assertEq(rewards_, 0);
 
-        assertEq(IGold(_bank).balanceOf(_military), 1);
+        assertEq(IGold(_bank).balanceOf(_military), 2);
     }
 }
