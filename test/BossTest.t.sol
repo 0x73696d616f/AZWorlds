@@ -15,12 +15,13 @@ contract BossTest is Fixture {
     function testAttack_ok() public {
         vm.prank(_player1);
         Boss(_boss).attackBoss(_player1CharId);
-        vm.warp(_bossRoundDuration);
+        vm.warp(_bossRoundDuration + block.timestamp);
         vm.prank(_player1);
-        Boss(_boss).attackBoss(_player1CharId);
-        vm.prank(_vrf2Wrapper);
+        Boss(_boss).nextRound();
+        assertEq(Boss(_boss).roundId(), 1);
         uint256[] memory itemId_ = new uint256[](1);
-        itemId_[0] = type(uint256).max / 2;
+        itemId_[0] = type(uint2 56).max / 2;
+        vm.prank(_vrf2Wrapper);
         IBoss(_boss).rawFulfillRandomWords(0, itemId_);
         vm.prank(_player1);
         uint256 receivedItemId_ = Boss(_boss).claimRewards(_player1CharId, 0);

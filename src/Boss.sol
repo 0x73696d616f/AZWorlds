@@ -29,14 +29,12 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
     }
 
     function attackBoss(uint256 charId_) external override {
-        nextRound();
         if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
         charInfo[roundId][charId_].attacked = true;
         emit BossAttacked(roundId, charId_);
     }
 
     function claimRewards(uint256 charId_, uint256 roundId_) external override returns (uint256 itemId_) {
-        nextRound();
         uint256 seed_ = roundSeed[roundId_];
         if (seed_ == 0) revert RoundNotOverError(roundId_);
         if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
@@ -59,13 +57,14 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
 
     function nextRound() public override {
         if (block.timestamp - lastRoundTimestamp < ROUND_DURATION) return;
+        ++roundId;
         lastRoundTimestamp = block.timestamp;
         requestRandomness(100_000, 10, 1);
         emit RoundStarted(roundId, block.timestamp);
     }
 
     function fulfillRandomWords(uint256, uint256[] memory _randomWords) internal override {
-        roundSeed[roundId++] = _randomWords[0];
+        roundSeed[roundId - 1] = _randomWords[0];
         emit RandomWordsFulfilled(roundId, _randomWords[0]);
     }
 }
