@@ -25,7 +25,16 @@ contract CharacterPortal is ICharacterPortal, ONFT721Core {
         bytes memory adapterParams_
     ) external payable override {
         if (msg.sender != address(_character)) revert NotCharacterError(msg.sender);
-        _send(from_, dstChainId_, abi.encode(toAddress_), tokenIds_, refundAddress_, address(0), adapterParams_, data_);
+        _send(
+            from_,
+            dstChainId_,
+            abi.encodePacked(toAddress_),
+            tokenIds_,
+            refundAddress_,
+            address(0),
+            adapterParams_,
+            data_
+        );
     }
 
     function _creditTo(uint16, address _toAddress, uint256 _tokenId, bytes memory _data) internal virtual override {
