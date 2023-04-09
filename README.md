@@ -7,6 +7,14 @@
 [license]: https://opensource.org/licenses/MIT
 [license-badge]: https://img.shields.io/badge/License-MIT-blue.svg
 
+## Frontend
+
+https://github.com/0x73696d616f/azworlds-frontend
+
+## Backend
+
+https://github.com/0x73696d616f/AZWorlds-backend
+
 # Description
 
 AZWorlds is a cross chain finance/skill play to earn game where players compete for the most power and get real rewards in return.
