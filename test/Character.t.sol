@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import { console } from "@forge-std/console.sol";
+import { Test } from "@forge-std/Test.sol";
+
 import { ICharacter } from "../src/interfaces/ICharacter.sol";
 import { Fixture } from "./Fixture.t.sol";
 import { IItem } from "src/interfaces/IItem.sol";
@@ -29,6 +32,8 @@ contract CharacterTest is Fixture {
     }
 
     function testCarryGold_ok() public {
+        (ICharacter.CharInfo memory charInfo_,) = ICharacter(_character).getCharInfo(_player1CharId);
+        console.logBytes(abi.encode(charInfo_));
         _carryGold(100);
     }
 

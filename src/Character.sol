@@ -84,11 +84,13 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
         emit GoldDropped(charId_, goldAmount_);
     }
 
-    function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_)
-        external
-        payable
-        override
-    {
+    function sendFrom(
+        address from_,
+        uint16 dstChainId_,
+        address toAddress_,
+        uint256 charId_,
+        bytes memory adapterParams_
+    ) external payable override {
         CharInfo memory charInfo_ = _charInfos[charId_];
         _deleteCharInfo(charId_);
         if (charInfo_.equippedGold > 0) bank.burn(address(this), uint256(charInfo_.equippedGold));
@@ -97,15 +99,19 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
         data_[0] = abi.encode(charInfo_);
         uint256[] memory tokenId_ = new uint256[](1);
         tokenId_[0] = charId_;
-        portal.send{ value: msg.value }(from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_);
+        portal.send{ value: msg.value }(
+            from_, dstChainId_, toAddress_, tokenId_, payable(msg.sender), data_, adapterParams_
+        );
         emit CharacterSent(charInfo_, dstChainId_, toAddress_);
     }
 
-    function sendBatchFrom(address from_, uint16 dstChainId_, address toAddress_, uint256[] calldata charIds_)
-        external
-        payable
-        override
-    {
+    function sendBatchFrom(
+        address from_,
+        uint16 dstChainId_,
+        address toAddress_,
+        uint256[] calldata charIds_,
+        bytes memory adapterParams_
+    ) external payable override {
         bytes[] memory data_ = new bytes[](charIds_.length);
         CharInfo memory charInfo_;
         for (uint256 i_; i_ < charIds_.length;) {
@@ -119,7 +125,9 @@ contract Character is ICharacter, ERC721Votes, ERC721URIStorage {
                 ++i_;
             }
         }
-        portal.send{ value: msg.value }(from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_);
+        portal.send{ value: msg.value }(
+            from_, dstChainId_, toAddress_, charIds_, payable(msg.sender), data_, adapterParams_
+        );
     }
 
     function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external override onlyPortal {

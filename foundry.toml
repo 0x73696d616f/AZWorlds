@@ -46,4 +46,4 @@ sepolia   = { key = "${ETHERSCAN_KEY}",          url = "https://api-sepolia.ethe
 mainnet   = { key = "${ETHERSCAN_KEY}" }
 optimism  = { key = "${OPTIMISM_ETHERSCAN_KEY}", url = "https://api-optimistic.etherscan.io/api" }
 polygon   = { key = "${POLYGONSCAN_KEY}",        url = "https://api.polygonscan.com/api" }
-mumbai    = { key = "${POLYGONSCAN_KEY}",        url = "https://api-testnet.polygonscan.com/" }
+mumbai    = { key = "${POLYGONSCAN_KEY}",        url = "https://api-testnet.polygonscan.com/api" }

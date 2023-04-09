@@ -28,16 +28,42 @@ import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRou
 contract Deploy is Script {
     uint256 private _deployerPrivateKey;
     address private _deployerAddress;
-    address private constant _layerZeroEndpoint = 0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1;
-    address private constant _link = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
-    address private constant _vrf2Wrapper = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
+
+    // BLOCKCHAIN SPECIFIC CONSTANTS
+    // LAYER ZERO
+    address private constant LAYER_ZERO_ADDRESS_SEPOLIA = 0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1;
+    address private constant LAYER_ZERO_ADDRESS_MUMBAI = 0xf69186dfBa60DdB133E91E9A4B5673624293d8F8;
+    address private constant LAYER_ZERO_ADDRESS_GOERLI = 0xbfD2135BFfbb0B5378b56643c2Df8a87552Bfa23;
+    uint16 private constant LAYER_ZERO_CHAIN_ID_SEPOLIA = 10_161;
+    uint16 private constant LAYER_ZERO_CHAIN_ID_MUMBAI = 10_109;
+    uint16 private constant LAYER_ZERO_CHAIN_ID_GOERLI = 10_121;
+    // CHAINLINK
+    address private constant LINK_ADDRESS_SEPOLIA = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+    address private constant LINK_ADDRESS_MUMBAI = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
+    address private constant LINK_ADDRESS_GOERLI = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
+    address private constant VRF2_WRAPPER_ADDRESS_SEPOLIA = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
+    address private constant VRF2_WRAPPER_ADDRESS_MUMBAI = 0x99aFAf084eBA697E584501b8Ed2c0B37Dd136693;
+    address private constant VRF2_WRAPPER_ADDRESS_GOERLI = 0x708701a1DfF4f478de54383E49a627eD4852C816;
+    // CHAINID STARTING CHAR
+    uint8 private constant CHAINID_STARTING_CHAR_SEPOLIA = 1;
+    uint8 private constant CHAINID_STARTING_CHAR_MUMBAI = 2;
+    uint8 private constant CHAINID_STARTING_CHAR_GOERLI = 3;
+
+    address private constant _layerZeroEndpoint = LAYER_ZERO_ADDRESS_GOERLI;
+    uint16 private constant _layerZeroChainId = LAYER_ZERO_CHAIN_ID_GOERLI;
+    address private constant _link = LINK_ADDRESS_GOERLI;
+    address private constant _vrf2Wrapper = VRF2_WRAPPER_ADDRESS_GOERLI;
+    uint16 private constant _trustedChain1 = LAYER_ZERO_CHAIN_ID_SEPOLIA;
+    uint16 private constant _trustedChain2 = LAYER_ZERO_CHAIN_ID_MUMBAI;
+    uint8 private constant _chainId = CHAINID_STARTING_CHAR_GOERLI;
+
     uint8 private constant _nrChains = 3;
-    uint8 private constant _chainId = 1;
     address private constant _WBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
     address private constant _USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     uint256 private _bossRoundDuration = 5 minutes;
     uint24 private constant _poolFee = 500;
     uint8 private constant _characterFee = 20;
+
     USDC private _usdc;
     RewardToken private _rewardToken;
     ISwapRouter private _swapRouter;
@@ -62,7 +88,7 @@ contract Deploy is Script {
 
     function run() public {
         vm.startBroadcast(_deployerPrivateKey);
-        //_deploy();
+        _deploy();
         vm.stopBroadcast();
     }
 
@@ -141,15 +167,15 @@ contract Deploy is Script {
 
         Bank(_bank).setInvestmentStrategy(MockInvestmentStrategy(_investmentStrategy));
 
-        /*Bank(_bank).setTrustedRemote(10_106, abi.encodePacked(address(_bank), address(_bank))); // fuji
-        Bank(_bank).setTrustedRemote(10_109, abi.encodePacked(address(_bank), address(_bank))); // mumbai
+        Bank(_bank).setTrustedRemote(_trustedChain1, abi.encodePacked(address(_bank), address(_bank)));
+        Bank(_bank).setTrustedRemote(_trustedChain2, abi.encodePacked(address(_bank), address(_bank)));
 
-        Item(_item).setTrustedRemote(10_106, abi.encodePacked(address(_item), address(_item))); // fuji
-        Item(_item).setTrustedRemote(10_109, abi.encodePacked(address(_item), address(_item))); // mumbai
+        Item(_item).setTrustedRemote(_trustedChain1, abi.encodePacked(address(_item), address(_item)));
+        Item(_item).setTrustedRemote(_trustedChain2, abi.encodePacked(address(_item), address(_item)));
 
         CharacterPortal _characterPortal = Character(_character).portal();
 
-        _characterPortal.setTrustedRemote(10_106, abi.encodePacked(address(_character), address(_character))); // fuji
-        _characterPortal.setTrustedRemote(10_109, abi.encodePacked(address(_character), address(_character))); // mumbai*/
+        _characterPortal.setTrustedRemote(_trustedChain1, abi.encodePacked(address(_character), address(_character)));
+        _characterPortal.setTrustedRemote(_trustedChain2, abi.encodePacked(address(_character), address(_character)));
     }
 }

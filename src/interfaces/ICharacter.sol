@@ -36,7 +36,13 @@ interface ICharacter is IERC721, IVotes {
      * `_zroPaymentAddress` set to address(0x0) if not paying in ZRO (LayerZero Token)
      * `_adapterParams` is a flexible bytes array to indicate messaging adapter services
      */
-    function sendFrom(address from_, uint16 dstChainId_, address toAddress_, uint256 charId_) external payable;
+    function sendFrom(
+        address from_,
+        uint16 dstChainId_,
+        address toAddress_,
+        uint256 charId_,
+        bytes memory adapterParams_
+    ) external payable;
 
     /**
      * @dev send tokens `_tokenIds[]` to (`_dstChainId`, `_toAddress`) from `_from`
@@ -44,9 +50,13 @@ interface ICharacter is IERC721, IVotes {
      * `_zroPaymentAddress` set to address(0x0) if not paying in ZRO (LayerZero Token)
      * `_adapterParams` is a flexible bytes array to indicate messaging adapter services
      */
-    function sendBatchFrom(address _from, uint16 _dstChainId, address _toAddress, uint256[] calldata charIds_)
-        external
-        payable;
+    function sendBatchFrom(
+        address _from,
+        uint16 _dstChainId,
+        address _toAddress,
+        uint256[] calldata charIds_,
+        bytes memory adapterParams_
+    ) external payable;
 
     function creditTo(address toAddress_, uint256 tokenId_, bytes memory data_) external;
 

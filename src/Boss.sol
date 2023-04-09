@@ -30,6 +30,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
 
     function attackBoss(uint256 charId_) external override {
         if (_char.ownerOf(charId_) != msg.sender) revert NotCharOwnerError(charId_, msg.sender);
+        if (charInfo[roundId][charId_].attacked) revert AlreadyAttackedError(charId_, roundId);
         charInfo[roundId][charId_].attacked = true;
         emit BossAttacked(roundId, charId_);
     }
@@ -59,7 +60,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         if (block.timestamp - lastRoundTimestamp < ROUND_DURATION) return;
         ++roundId;
         lastRoundTimestamp = block.timestamp;
-        requestRandomness(100_000, 10, 1);
+        requestRandomness(100_000, 1, 1);
         emit RoundStarted(roundId, block.timestamp);
     }
 
