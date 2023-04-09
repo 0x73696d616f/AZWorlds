@@ -56,6 +56,11 @@ Anyone can deposit USDC and get gold (shares) in return. Character holders can a
 
 Players can use gold to bet on the DAI/MATIC price. Fully decentralized by using the 1Inch spot price aggregator.
 
+## Testing the game
+
+Head over to 0xaC5ded3fc6858cf82dD631a68b3Aed1C83afc05C at sepolia testnet and mint up to 1000e18 mock USDC for free.
+Then, buy a character at https://azworlds-frontend.vercel.app/characterSale.
+
 # About Us
 [Three Sigma](https://threesigma.xyz/) is a venture builder firm focused on blockchain engineering, research, and investment. Our mission is to advance the adoption of blockchain technology and contribute towards the healthy development of the Web3 space.
 
