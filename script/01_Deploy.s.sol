@@ -175,8 +175,12 @@ contract Deploy is Script {
 
         CharacterPortal _characterPortal = Character(_character).portal();
 
-        _characterPortal.setTrustedRemote(_trustedChain1, abi.encodePacked(address(_character), address(_character)));
-        _characterPortal.setTrustedRemote(_trustedChain2, abi.encodePacked(address(_character), address(_character)));
+        _characterPortal.setTrustedRemote(
+            _trustedChain1, abi.encodePacked(address(_characterPortal), address(_characterPortal))
+        );
+        _characterPortal.setTrustedRemote(
+            _trustedChain2, abi.encodePacked(address(_characterPortal), address(_characterPortal))
+        );
         _characterPortal.setMinDstGas(_trustedChain1, 1, 1);
         _characterPortal.setMinDstGas(_trustedChain2, 1, 1);
     }

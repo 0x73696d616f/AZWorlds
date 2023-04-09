@@ -60,7 +60,7 @@ contract Boss is IBoss, VRFV2WrapperConsumerBase {
         if (block.timestamp - lastRoundTimestamp < ROUND_DURATION) return;
         ++roundId;
         lastRoundTimestamp = block.timestamp;
-        requestRandomness(100_000, 1, 1);
+        requestRandomness(100_000, 5, 1);
         emit RoundStarted(roundId, block.timestamp);
     }
 

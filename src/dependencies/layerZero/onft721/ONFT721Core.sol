@@ -93,7 +93,7 @@ abstract contract ONFT721Core is NonblockingLzApp, ERC165, IONFT721Core {
 
         address toAddress;
         assembly {
-            toAddress := mload(add(toAddressBytes, 20))
+            toAddress := mload(add(toAddressBytes, 32))
         }
 
         uint256 nextIndex = _creditTill(_srcChainId, toAddress, 0, tokenIds, data);
