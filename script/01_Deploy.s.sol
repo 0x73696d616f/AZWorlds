@@ -49,13 +49,13 @@ contract Deploy is Script {
     uint8 private constant CHAINID_STARTING_CHAR_MUMBAI = 2;
     uint8 private constant CHAINID_STARTING_CHAR_GOERLI = 3;
 
-    address private constant _layerZeroEndpoint = LAYER_ZERO_ADDRESS_GOERLI;
-    uint16 private constant _layerZeroChainId = LAYER_ZERO_CHAIN_ID_GOERLI;
-    address private constant _link = LINK_ADDRESS_GOERLI;
-    address private constant _vrf2Wrapper = VRF2_WRAPPER_ADDRESS_GOERLI;
+    address private constant _layerZeroEndpoint = LAYER_ZERO_ADDRESS_MUMBAI;
+    uint16 private constant _layerZeroChainId = LAYER_ZERO_CHAIN_ID_MUMBAI;
+    address private constant _link = LINK_ADDRESS_MUMBAI;
+    address private constant _vrf2Wrapper = VRF2_WRAPPER_ADDRESS_MUMBAI;
     uint16 private constant _trustedChain1 = LAYER_ZERO_CHAIN_ID_SEPOLIA;
-    uint16 private constant _trustedChain2 = LAYER_ZERO_CHAIN_ID_MUMBAI;
-    uint8 private constant _chainId = CHAINID_STARTING_CHAR_GOERLI;
+    uint16 private constant _trustedChain2 = LAYER_ZERO_CHAIN_ID_GOERLI;
+    uint8 private constant _chainId = CHAINID_STARTING_CHAR_MUMBAI;
 
     uint8 private constant _nrChains = 3;
     address private constant _WBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
